@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>shanz — ✦</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --yellow: #FEF7DC;
+    --black: #070707;
+    --white: #f5f2ec;
+    --gray: #2a2a2a;
+    --gray2: #444;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-display);
+    cursor: none;
+  }
+
+  #cursor {
+    position: fixed; top: 0; left: 0; z-index: 9999;
+    width: 8px; height: 8px;
+    background: var(--yellow);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s;
+    mix-blend-mode: difference;
+  }
+  #cursor.big { width: 28px; height: 28px; }
+
+  #stars {
+    position: fixed; inset: 0; z-index: 0;
+    overflow: hidden; pointer-events: none;
+  }
+  .star {
+    position: absolute; border-radius: 50%;
+    background: var(--white); opacity: 0;
+    animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+  }
+  @keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:var(--op,0.6)} }
+
+  #solar-canvas {
+    position: fixed; inset: 0; z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .orbit-ring {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(254,247,220,0.055);
+    pointer-events: none;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  #sun {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10; cursor: none;
+  }
+  .sun-core {
+    width: 140px; height: 140px; border-radius: 50%;
+    background: radial-gradient(circle at 36% 36%, #fffde0, #FEF7DC 55%, #c8a000);
+    box-shadow: 0 0 55px 18px rgba(254,220,60,0.28), 0 0 120px 50px rgba(254,247,220,0.1);
+    display: flex; align-items: center; justify-content: center;
+    animation: pulse-sun 4s ease-in-out infinite;
+  }
+  @keyframes pulse-sun {
+    0%,100%{box-shadow:0 0 55px 18px rgba(254,220,60,0.28),0 0 120px 50px rgba(254,247,220,0.1)}
+    50%{box-shadow:0 0 90px 32px rgba(254,220,60,0.38),0 0 180px 80px rgba(254,247,220,0.15)}
+  }
+  #sun:hover .sun-core {
+    box-shadow: 0 0 120px 42px rgba(254,220,60,0.5), 0 0 220px 100px rgba(254,247,220,0.18);
+  }
+
+  .planet-orbit {
+    position: absolute; top: 50%; left: 50%;
+    width: 0; height: 0; z-index: 5;
+  }
+  .planet-dot {
+    position: absolute; border-radius: 50%; cursor: none;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex; align-items: center; justify-content: center;
+    overflow: visible;
+  }
+  .planet-dot:hover { transform: translate(-50%,-50%) scale(1.55) !important; }
+
+  /* Simple name label for empty planets */
+  .planet-label {
+    position: absolute; white-space: nowrap;
+    font-family: var(--font-mono); font-size: 9px;
+    color: rgba(245,242,236,0.45); letter-spacing: 0.1em;
+    pointer-events: none;
+    top: 50%; transform: translateY(-50%);
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .planet-dot:hover .planet-label { opacity: 1; }
+
+  /* Tooltip-with-line for filled (content) planets */
+  .planet-tooltip {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    top: 50%;
+    /* left set per planet in JS */
+  }
+  .planet-dot:hover .planet-tooltip { opacity: 1; }
+  .planet-tooltip-line {
+    height: 1px;
+    background: rgba(254,247,220,0.3);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .planet-tooltip-text {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--yellow);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .planet-tooltip-sub {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: rgba(254,247,220,0.45);
+    letter-spacing: 0.15em;
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+
+  /* Sun tooltip */
+  #sun-tooltip {
+    position: absolute;
+    top: 50%; left: calc(50% + 78px);
+    transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex; align-items: center; gap: 0;
+  }
+  #sun:hover #sun-tooltip { opacity: 1; }
+  .sun-tooltip-line {
+    width: 40px; height: 1px;
+    background: rgba(254,247,220,0.3);
+    flex-shrink: 0;
+  }
+  .sun-tooltip-body { padding-left: 10px; }
+  .sun-tooltip-text {
+    font-family: var(--font-display); font-size: 15px;
+    font-weight: 700; color: var(--yellow); letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .sun-tooltip-sub {
+    font-family: var(--font-mono); font-size: 8px;
+    color: rgba(254,247,220,0.4); letter-spacing: 0.15em;
+    margin-top: 3px; white-space: nowrap;
+  }
+
+  #moon-orbit-wrapper {
+    position: absolute; top: 50%; left: 50%;
+    width: 0; height: 0; z-index: 6; pointer-events: none;
+  }
+  #moon-orbit-wrapper .planet-dot { pointer-events: all; }
+
+  #name-header {
+    position: fixed; top: 28px; left: 36px; z-index: 20; pointer-events: none;
+  }
+  #name-header h1 {
+    font-family: var(--font-display); font-size: 12px;
+    font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--yellow); opacity: 0.9;
+  }
+  #name-header p {
+    font-family: var(--font-mono); font-size: 8px;
+    color: rgba(245,242,236,0.28); letter-spacing: 0.15em; margin-top: 3px;
+  }
+
+  #hint {
+    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
+    z-index: 20; pointer-events: none;
+    animation: fade-hint 7s ease forwards 1.5s;
+  }
+  @keyframes fade-hint { 0%,70%{opacity:1} 100%{opacity:0} }
+  #hint span {
+    font-family: var(--font-mono); font-size: 8px;
+    color: rgba(245,242,236,0.22); letter-spacing: 0.2em;
+  }
+
+  /* ── OVERLAY ── */
+  #overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(7,7,7,0); pointer-events: none;
+    transition: background 0.45s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #overlay.active { background: rgba(7,7,7,0.93); pointer-events: all; }
+  #expanded-panel {
+    position: relative; width: min(780px, 92vw);
+    max-height: 88vh; overflow-y: auto;
+    opacity: 0; transform: scale(0.9);
+    transition: opacity 0.4s cubic-bezier(0.34,1.2,0.64,1), transform 0.4s cubic-bezier(0.34,1.2,0.64,1);
+    scrollbar-width: none;
+  }
+  #expanded-panel::-webkit-scrollbar { display: none; }
+  #overlay.active #expanded-panel { opacity: 1; transform: scale(1); }
+
+  .exp-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 34px;
+  }
+  .exp-planet-name {
+    font-family: var(--font-display); font-size: clamp(24px,5vw,44px);
+    font-weight: 800; color: var(--yellow); letter-spacing: -0.01em; line-height: 1;
+  }
+  .exp-planet-desc {
+    font-family: var(--font-mono); font-size: 9px;
+    color: rgba(245,242,236,0.32); letter-spacing: 0.15em;
+    margin-top: 7px; text-transform: uppercase;
+  }
+  .close-btn {
+    background: none; border: 1px solid rgba(254,247,220,0.16);
+    color: var(--white); font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 0.14em; padding: 7px 12px;
+    cursor: none; transition: border-color 0.2s, color 0.2s;
+    border-radius: 2px; flex-shrink: 0; margin-top: 4px;
+  }
+  .close-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+
+  /* Project list */
+  .project-list { display: flex; flex-direction: column; gap: 2px; }
+  .project-item {
+    display: flex; align-items: center; gap: 16px;
+    padding: 15px 16px;
+    border: 1px solid rgba(254,247,220,0.07); border-radius: 4px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .project-item:hover { border-color: rgba(254,247,220,0.15); background: rgba(254,247,220,0.025); }
+  .proj-planet {
+    width: 36px; height: 36px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .proj-info { flex: 1; min-width: 0; }
+  .proj-title {
+    font-family: var(--font-display); font-size: 14px;
+    font-weight: 700; color: var(--white); margin-bottom: 3px;
+  }
+  .proj-short {
+    font-family: var(--font-mono); font-size: 9px;
+    color: rgba(245,242,236,0.35); letter-spacing: 0.07em; line-height: 1.5;
+  }
+  .proj-links { display: flex; gap: 10px; flex-shrink: 0; align-items: center; }
+  .proj-link-btn {
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em;
+    text-decoration: none; color: rgba(245,242,236,0.42);
+    border: none; border-bottom: 1px solid rgba(254,247,220,0.12);
+    padding-bottom: 1px; background: none;
+    transition: color 0.2s, border-color 0.2s; cursor: none;
+  }
+  .proj-link-btn:hover, .proj-link-btn.detail { color: var(--yellow); border-bottom-color: var(--yellow); }
+  .proj-stack { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+  .stack-tag {
+    font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.09em;
+    color: rgba(245,242,236,0.28); border: 1px solid rgba(254,247,220,0.08);
+    padding: 1px 5px; border-radius: 2px;
+  }
+
+  /* Quest list */
+  .quest-list { display: flex; flex-direction: column; gap: 4px; }
+  .quest-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 11px 16px;
+    border: 1px solid rgba(254,247,220,0.06); border-radius: 4px;
+  }
+  .quest-status {
+    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.1em;
+    padding: 2px 7px; border-radius: 2px; flex-shrink: 0; white-space: nowrap;
+  }
+  .quest-status.completed { color: #a0e0c0; border: 1px solid rgba(160,224,192,0.28); }
+  .quest-status.scheduled { color: #a0c0e8; border: 1px solid rgba(160,192,232,0.28); }
+  .quest-status.progress  { color: #FEF7DC; border: 1px solid rgba(254,247,220,0.2); opacity: 0.65; }
+  .quest-status.open      { color: rgba(245,242,236,0.2); border: 1px solid rgba(254,247,220,0.06); }
+  .quest-name {
+    font-family: var(--font-display); font-size: 13px; color: var(--white); font-weight: 500;
+  }
+  .quest-detail {
+    font-family: var(--font-mono); font-size: 8px;
+    color: rgba(245,242,236,0.25); letter-spacing: 0.1em; margin-left: auto;
+  }
+
+  /* ── BLOG PAGE ── */
+  #blog-page {
+    position: fixed; inset: 0; z-index: 200;
+    background: var(--black); overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.5s cubic-bezier(0.77,0,0.18,1);
+    scrollbar-width: thin; scrollbar-color: var(--gray) transparent;
+  }
+  #blog-page.open { transform: translateX(0); }
+  .blog-inner { max-width: 650px; margin: 0 auto; padding: 56px 32px 120px; }
+  .blog-back {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em;
+    color: rgba(245,242,236,0.32); text-transform: uppercase;
+    background: none; border: none; cursor: none;
+    transition: color 0.2s; margin-bottom: 50px;
+  }
+  .blog-back:hover { color: var(--yellow); }
+  .blog-back::before { content: '←'; font-size: 11px; }
+  .blog-eyebrow {
+    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em;
+    color: var(--yellow); opacity: 0.55; text-transform: uppercase; margin-bottom: 13px;
+  }
+  .blog-title {
+    font-family: var(--font-display); font-size: clamp(24px,5vw,48px);
+    font-weight: 800; color: var(--white); line-height: 1.05;
+    letter-spacing: -0.02em; margin-bottom: 16px;
+  }
+  .blog-meta {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    font-family: var(--font-mono); font-size: 9px;
+    color: rgba(245,242,236,0.26); letter-spacing: 0.12em;
+    margin-bottom: 42px; padding-bottom: 26px;
+    border-bottom: 1px solid rgba(254,247,220,0.055);
+  }
+  .blog-meta a { color: var(--yellow); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; }
+  .blog-meta a:hover { opacity: 1; }
+  .blog-section { margin-bottom: 42px; }
+  .blog-section-num {
+    font-family: var(--font-mono); font-size: 8px;
+    color: var(--yellow); opacity: 0.4; letter-spacing: 0.2em; margin-bottom: 7px;
+  }
+  .blog-section-title {
+    font-family: var(--font-display); font-size: 17px; font-weight: 700;
+    color: var(--white); margin-bottom: 12px; font-style: italic;
+  }
+  .blog-section-body {
+    font-family: var(--font-display); font-size: 15px;
+    color: rgba(245,242,236,0.62); line-height: 1.85;
+  }
+  hr.blog-divider { border: none; border-top: 1px solid rgba(254,247,220,0.05); margin: 34px 0; }
+  .blog-stack-section { margin-top: 50px; }
+  .blog-stack-title {
+    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em;
+    color: rgba(245,242,236,0.22); text-transform: uppercase; margin-bottom: 9px;
+  }
+  .blog-stack-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .blog-stack-tag {
+    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.1em;
+    color: var(--yellow); opacity: 0.5;
+    border: 1px solid rgba(254,247,220,0.12); padding: 3px 8px; border-radius: 2px;
+  }
+
+  /* ── ABOUT PANEL ── */
+  #about-panel {
+    position: fixed; inset: 0; z-index: 150;
+    background: rgba(7,7,7,0); pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.45s;
+  }
+  #about-panel.active { background: rgba(7,7,7,0.94); pointer-events: all; }
+  #about-inner {
+    max-width: 490px; width: 90%;
+    opacity: 0; transform: scale(0.9);
+    transition: all 0.4s cubic-bezier(0.34,1.2,0.64,1);
+    position: relative;
+  }
+  #about-panel.active #about-inner { opacity: 1; transform: scale(1); }
+  .about-close {
+    position: absolute; top: -40px; right: 0;
+    background: none; border: 1px solid rgba(254,247,220,0.16);
+    color: var(--white); font-family: var(--font-mono);
+    font-size: 9px; letter-spacing: 0.14em; padding: 7px 12px;
+    cursor: none; border-radius: 2px; transition: border-color 0.2s, color 0.2s;
+  }
+  .about-close:hover { border-color: var(--yellow); color: var(--yellow); }
+  .about-eyebrow {
+    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em;
+    color: var(--yellow); opacity: 0.5; text-transform: uppercase; margin-bottom: 16px;
+  }
+  .about-name {
+    font-family: var(--font-display); font-size: 50px; font-weight: 800;
+    color: var(--yellow); line-height: 1; margin-bottom: 20px; letter-spacing: -0.02em;
+  }
+  .about-body {
+    font-family: var(--font-display); font-size: 16px;
+    color: rgba(245,242,236,0.58); line-height: 1.8;
+  }
+  .about-body a {
+    color: var(--yellow); opacity: 0.8; text-decoration: none;
+    border-bottom: 1px solid rgba(254,247,220,0.28);
+    transition: opacity 0.2s;
+  }
+  .about-body a:hover { opacity: 1; }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="stars"></div>
+
+<div id="name-header">
+  <h1>shanz</h1>
+</div>
+
+<div id="hint"><span>click the sun or any planet ✦</span></div>
+
+<div id="solar-canvas">
+  <div id="sun" onclick="openAbout()">
+    <div class="sun-core"></div>
+    <div id="sun-tooltip">
+      <div class="sun-tooltip-line"></div>
+      <div class="sun-tooltip-body">
+        <div class="sun-tooltip-text">about me</div>
+        <div class="sun-tooltip-sub">click to open</div>
+      </div>
+    </div>
+  </div>
+  <div id="moon-orbit-wrapper"></div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" onclick="closeOverlayBg(event)">
+  <div id="expanded-panel">
+    <div class="exp-header">
+      <div>
+        <div class="exp-planet-name" id="exp-title"></div>
+        <div class="exp-planet-desc" id="exp-desc"></div>
+      </div>
+      <button class="close-btn" onclick="closeOverlay()">close ✕</button>
+    </div>
+    <div id="project-list"></div>
+  </div>
+</div>
+
+<!-- ABOUT PANEL -->
+<div id="about-panel" onclick="closeAboutBg(event)">
+  <div id="about-inner">
+    <button class="about-close" onclick="closeAbout()">close ✕</button>
+    <div class="about-eyebrow">☀️ center of it all</div>
+    <div class="about-name">shanz</div>
+    <div class="about-body">
+      shanz is interested in building things on the internet that are fun and nice to look at and create no shareholder value.<br><br>
+      please find shanz on <a href="https://x.com/notshananigans/" target="_blank">x.com</a> and send cool projects, art, music, etc.
+    </div>
+  </div>
+</div>
+
+<!-- BLOG PAGE -->
+<div id="blog-page">
+  <div class="blog-inner" id="blog-inner"></div>
+</div>
+
+<script>
+const TILT = 0.35;
+
+const PLANETS = [
+  {
+    id:'mercury', label:'mercury',
+    color:'#b5b0aa', size:14,
+    orbitRadius:200, speed:0.00024, angle:1.0,
+    filled:false, sectionTitle:'mercury', sectionDesc:'',
+    type:'empty', projects:[]
+  },
+  {
+    id:'venus', label:'venus',
+    color:'#e8c97a', size:22,
+    orbitRadius:284, speed:0.000175, angle:3.4,
+    filled:false, sectionTitle:'venus', sectionDesc:'',
+    type:'empty', projects:[]
+  },
+  {
+    id:'earth', label:'earth',
+    color:'#6aafcf', size:26,
+    orbitRadius:384, speed:0.000125, angle:0.5,
+    filled:true,
+    tooltipMain:'on earth: coding projects',
+    tooltipSub:'click to explore',
+    sectionTitle:'coding projects', sectionDesc:'things i built',
+    type:'projects',
+    projects:[
+      {
+        id:'photobooth',
+        title:'get in da (photo)booth',
+        short:'a diy photobooth experience for any vibe',
+        link:'https://get-in-da-booth.netlify.app/',
+        color:'#e8a8c7',
+        stack:['Raspberry Pi','Python','React','Netlify'],
+        blog:{
+          eyebrow:'project 01',
+          started:'write your story here — how did this start?',
+          goal:'write your goal here.',
+          process:'write your process here — tools, roadblocks, etc.',
+          result:'write your result here.',
+          next:'write your next steps here.'
+        }
+      },
+      {
+        id:'shoyos',
+        title:'never enough shoyos',
+        short:'3D infinite gallery of hinata shoyo figurines',
+        link:'https://just-shoyo-activities-v2.vercel.app/',
+        color:'#FEF7DC',
+        stack:['React','Three.js','Vite','Vercel'],
+        blog:{
+          eyebrow:'project 02',
+          started:'write your story here — how did this start?',
+          goal:'write your goal here.',
+          process:'write your process here — tools, roadblocks, etc.',
+          result:'write your result here.',
+          next:'write your next steps here.'
+        }
+      },
+      {
+        id:'newyorker',
+        title:'are u really a new yorker',
+        short:'interactive quiz to prove urself as a new york transplant',
+        link:'#',
+        color:'#c7e8a8',
+        stack:['Next.js','Tailwind','Vercel'],
+        blog:{
+          eyebrow:'project 03',
+          started:'write your story here — how did this start?',
+          goal:'write your goal here.',
+          process:'write your process here — tools, roadblocks, etc.',
+          result:'write your result here.',
+          next:'write your next steps here.'
+        }
+      },
+      {
+        id:'yourunme',
+        title:'you run me',
+        short:'personal running tracker with mood + music logging',
+        link:'#',
+        color:'#e8c7a8',
+        stack:['React Native','Supabase','Expo'],
+        blog:{
+          eyebrow:'project 04',
+          started:'write your story here — how did this start?',
+          goal:'write your goal here.',
+          process:'write your process here — tools, roadblocks, etc.',
+          result:'write your result here.',
+          next:'write your next steps here.'
+        }
+      }
+    ]
+  },
+  {
+    id:'mars', label:'mars',
+    color:'#d4795a', size:20,
+    orbitRadius:504, speed:0.00009, angle:2.2,
+    filled:true,
+    tooltipMain:'on mars: side quests',
+    tooltipSub:'click to explore',
+    sectionTitle:'side quests', sectionDesc:'do we have quests in common?',
+    type:'quests', projects:[]
+  },
+  {
+    id:'jupiter', label:'jupiter',
+    color:'#c8a87a', size:44,
+    orbitRadius:644, speed:0.000049, angle:5.0,
+    filled:false, sectionTitle:'jupiter', sectionDesc:'',
+    type:'empty', projects:[]
+  },
+  {
+    id:'saturn', label:'saturn',
+    color:'#d4c090', size:34,
+    orbitRadius:780, speed:0.000036, angle:1.8,
+    filled:false, sectionTitle:'saturn', sectionDesc:'',
+    type:'empty', projects:[], hasRing:true
+  },
+  {
+    id:'uranus', label:'uranus',
+    color:'#9ad4d6', size:28,
+    orbitRadius:896, speed:0.000024, angle:3.9,
+    filled:false, sectionTitle:'uranus', sectionDesc:'',
+    type:'empty', projects:[]
+  },
+  {
+    id:'neptune', label:'neptune',
+    color:'#5577cc', size:26,
+    orbitRadius:1000, speed:0.0000165, angle:0.3,
+    filled:false, sectionTitle:'neptune', sectionDesc:'',
+    type:'empty', projects:[]
+  }
+];
+
+const MOON = {
+  id:'moon', label:'moon / writing',
+  color:'#ccccbb', size:10,
+  orbitRadius:52, speed:0.0009, angle:1.2,
+  filled:true,
+  tooltipMain:'on the moon: writing',
+  tooltipSub:'click to explore',
+  sectionTitle:'writing', sectionDesc:'rabbit holes i go down',
+  type:'empty', projects:[]
+};
+
+const SIDE_QUESTS = [
+  {name:'run a half marathon',      status:'completed', detail:'3.24.2025 · philly love run'},
+  {name:'run a full marathon',      status:'scheduled', detail:'11.1.2026 · nyc marathon'},
+  {name:'produce some techno',      status:'progress',  detail:''},
+  {name:'read 26 books for 2026',   status:'progress',  detail:''},
+  {name:'do an ironman',            status:'open',      detail:''},
+  {name:'take an architecture course', status:'open',   detail:''},
+  {name:'make a mmorpg game',       status:'open',      detail:''},
+  {name:'publish short stories',    status:'open',      detail:''},
+  {name:'create animated series',   status:'open',      detail:''},
+  {name:'3d print figurines',       status:'open',      detail:''}
+];
+
+// Stars
+const starContainer = document.getElementById('stars');
+for (let i=0;i<200;i++){
+  const s=document.createElement('div'); s.className='star';
+  const sz=Math.random()<0.12?2:1;
+  s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*6}s;--op:${0.22+Math.random()*0.5};`;
+  starContainer.appendChild(s);
+}
+
+// Orbit rings
+const canvas = document.getElementById('solar-canvas');
+PLANETS.forEach(p=>{
+  const ring=document.createElement('div'); ring.className='orbit-ring';
+  const d=p.orbitRadius*2;
+  // Scale ring height by TILT for ellipse appearance
+  ring.style.width=d+'px'; ring.style.height=(d*TILT)+'px';
+  canvas.appendChild(ring);
+});
+
+// Build planet elements
+const planetEls=[];
+function buildDot(p, isClickable){
+  const orbit=document.createElement('div');
+  orbit.className='planet-orbit'; orbit.id=`orbit-${p.id}`;
+  const dot=document.createElement('div');
+  dot.className='planet-dot'; dot.id=`dot-${p.id}`;
+  if(p.filled){
+    dot.style.cssText=`width:${p.size}px;height:${p.size}px;background:${p.color};box-shadow:0 0 ${p.size*1.8}px ${p.size*0.55}px ${p.color}50;transform:translate(-50%,-50%);left:0;top:0;position:absolute;`;
+  } else {
+    dot.style.cssText=`width:${p.size}px;height:${p.size}px;background:transparent;border:1.5px solid ${p.color}80;transform:translate(-50%,-50%);left:0;top:0;position:absolute;`;
+  }
+  if(p.hasRing){
+    const rg=document.createElement('div');
+    rg.style.cssText=`position:absolute;top:50%;left:50%;width:${p.size*2.5}px;height:${p.size*0.45}px;border:1.5px solid ${p.color}50;border-radius:50%;transform:translate(-50%,-50%) rotateX(70deg);pointer-events:none;`;
+    dot.appendChild(rg);
+  }
+
+  if(p.filled && p.tooltipMain){
+    // Tooltip with extending line for content planets
+    const tt=document.createElement('div'); tt.className='planet-tooltip';
+    const lineLen=38;
+    tt.style.left=(p.size/2+4)+'px';
+    tt.style.transform='translateY(-50%)';
+    tt.innerHTML=`
+      <div class="planet-tooltip-line" style="width:${lineLen}px;"></div>
+      <div style="padding-left:8px;">
+        <div class="planet-tooltip-text">${p.tooltipMain}</div>
+        <div class="planet-tooltip-sub">${p.tooltipSub||''}</div>
+      </div>
+    `;
+    dot.appendChild(tt);
+  } else {
+    // Simple mono label for empty planets
+    const lbl=document.createElement('div'); lbl.className='planet-label';
+    lbl.textContent=p.label; lbl.style.left=(p.size/2+7)+'px';
+    dot.appendChild(lbl);
+  }
+
+  if(isClickable) dot.addEventListener('click',()=>openPlanet(p));
+  dot.addEventListener('mouseenter',()=>cursor.classList.add('big'));
+  dot.addEventListener('mouseleave',()=>cursor.classList.remove('big'));
+  orbit.appendChild(dot);
+  return {orbit,dot};
+}
+
+PLANETS.forEach(p=>{
+  const {orbit,dot}=buildDot(p,true);
+  canvas.appendChild(orbit);
+  planetEls.push({p,dot,angle:p.angle});
+});
+
+// Moon
+const moonWrapper=document.getElementById('moon-orbit-wrapper');
+const moonDot=document.createElement('div');
+moonDot.className='planet-dot'; moonDot.id='dot-moon';
+moonDot.style.cssText=`width:${MOON.size}px;height:${MOON.size}px;background:${MOON.color};box-shadow:0 0 10px 3px ${MOON.color}40;transform:translate(-50%,-50%);left:0;top:0;position:absolute;`;
+const moonTT=document.createElement('div'); moonTT.className='planet-tooltip';
+moonTT.style.left=(MOON.size/2+4)+'px'; moonTT.style.transform='translateY(-50%)';
+moonTT.innerHTML=`
+  <div class="planet-tooltip-line" style="width:32px;"></div>
+  <div style="padding-left:8px;">
+    <div class="planet-tooltip-text">${MOON.tooltipMain}</div>
+    <div class="planet-tooltip-sub">${MOON.tooltipSub}</div>
+  </div>
+`;
+moonDot.appendChild(moonTT);
+moonDot.addEventListener('click',()=>openPlanet(MOON));
+moonDot.addEventListener('mouseenter',()=>cursor.classList.add('big'));
+moonDot.addEventListener('mouseleave',()=>cursor.classList.remove('big'));
+moonWrapper.appendChild(moonDot);
+const moonState={angle:MOON.angle};
+
+// Animation
+function animate(){
+  planetEls.forEach(item=>{
+    item.angle+=item.p.speed*16;
+    const x=Math.cos(item.angle)*item.p.orbitRadius;
+    const y=Math.sin(item.angle)*item.p.orbitRadius*TILT;
+    item.dot.style.left=x+'px'; item.dot.style.top=y+'px';
+  });
+  // Moon tracks Earth
+  const earthEl=planetEls.find(e=>e.p.id==='earth');
+  if(earthEl){
+    moonState.angle+=MOON.speed*16;
+    const ex=parseFloat(earthEl.dot.style.left)||0;
+    const ey=parseFloat(earthEl.dot.style.top)||0;
+    const mx=Math.cos(moonState.angle)*MOON.orbitRadius;
+    const my=Math.sin(moonState.angle)*MOON.orbitRadius*TILT;
+    moonDot.style.left=(ex+mx)+'px';
+    moonDot.style.top=(ey+my)+'px';
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+
+// Cursor
+const cursor=document.getElementById('cursor');
+document.addEventListener('mousemove',e=>{
+  cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px';
+});
+document.querySelectorAll('button,a,#sun').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cursor.classList.add('big'));
+  el.addEventListener('mouseleave',()=>cursor.classList.remove('big'));
+});
+
+// Overlay
+function openPlanet(planet){
+  document.getElementById('exp-title').textContent=planet.sectionTitle;
+  document.getElementById('exp-desc').textContent=planet.sectionDesc;
+  const list=document.getElementById('project-list');
+  list.innerHTML='';
+
+  if(planet.type==='empty'){
+    list.innerHTML=`<div style="font-family:var(--font-mono);font-size:10px;color:rgba(245,242,236,0.22);letter-spacing:0.15em;padding:52px 20px;text-align:center;">coming soon ✦</div>`;
+  } else if(planet.type==='quests'){
+    const ql=document.createElement('div'); ql.className='quest-list';
+    const statusLabel={completed:'completed ✓',scheduled:'scheduled',progress:'in progress',open:'—'};
+    SIDE_QUESTS.forEach(q=>{
+      const item=document.createElement('div'); item.className='quest-item';
+      item.innerHTML=`
+        <div class="quest-status ${q.status}">${statusLabel[q.status]}</div>
+        <div class="quest-name">${q.name}</div>
+        ${q.detail?`<div class="quest-detail">${q.detail}</div>`:''}
+      `;
+      ql.appendChild(item);
+    });
+    list.appendChild(ql);
+  } else if(planet.type==='projects'){
+    const pl=document.createElement('div'); pl.className='project-list';
+    planet.projects.forEach(proj=>{
+      const item=document.createElement('div'); item.className='project-item';
+      item.innerHTML=`
+        <div class="proj-planet" style="background:${proj.color}15;border:1px solid ${proj.color}38;">
+          <div style="width:15px;height:15px;border-radius:50%;background:${proj.color};box-shadow:0 0 7px 2px ${proj.color}44;"></div>
+        </div>
+        <div class="proj-info">
+          <div class="proj-title">${proj.title}</div>
+          <div class="proj-short">${proj.short}</div>
+          <div class="proj-stack">${proj.stack.map(s=>`<span class="stack-tag">${s}</span>`).join('')}</div>
+        </div>
+        <div class="proj-links">
+          ${proj.link!=='#'
+            ?`<a href="${proj.link}" target="_blank" class="proj-link-btn">link ↗</a>`
+            :`<span class="proj-link-btn" style="opacity:0.18;pointer-events:none;">link ↗</span>`}
+          <button class="proj-link-btn detail" onclick="openBlog('${proj.id}')">details →</button>
+        </div>
+      `;
+      pl.appendChild(item);
+    });
+    list.appendChild(pl);
+  }
+  document.getElementById('overlay').classList.add('active');
+}
+function closeOverlay(){ document.getElementById('overlay').classList.remove('active'); }
+function closeOverlayBg(e){ if(e.target===document.getElementById('overlay')) closeOverlay(); }
+
+// Blog
+function openBlog(id){
+  const proj=PLANETS.flatMap(p=>p.projects).find(p=>p.id===id);
+  if(!proj) return;
+  const sections=[
+    {num:'01',title:'how it started',body:proj.blog.started},
+    {num:'02',title:'the goal',      body:proj.blog.goal},
+    {num:'03',title:'the process',   body:proj.blog.process},
+    {num:'04',title:'the result',    body:proj.blog.result},
+    {num:'05',title:'next steps',    body:proj.blog.next},
+  ];
+  document.getElementById('blog-inner').innerHTML=`
+    <button class="blog-back" onclick="closeBlog()">back to projects</button>
+    <div class="blog-eyebrow">${proj.blog.eyebrow} ✦ behind the scenes</div>
+    <div class="blog-title">${proj.title}</div>
+    <div class="blog-meta">
+      <span>${proj.short}</span>
+      ${proj.link!=='#'?`· <a href="${proj.link}" target="_blank">view project ↗</a>`:''}
+    </div>
+    ${sections.map((s,i)=>`
+      <div class="blog-section">
+        <div class="blog-section-num">${s.num} / 05</div>
+        <div class="blog-section-title">${s.title}</div>
+        <div class="blog-section-body">${s.body}</div>
+      </div>
+      ${i<sections.length-1?'<hr class="blog-divider"/>':''}
+    `).join('')}
+    <div class="blog-stack-section">
+      <div class="blog-stack-title">tools used</div>
+      <div class="blog-stack-tags">${proj.stack.map(s=>`<span class="blog-stack-tag">${s}</span>`).join('')}</div>
+    </div>
+  `;
+  document.getElementById('blog-page').classList.add('open');
+}
+function closeBlog(){ document.getElementById('blog-page').classList.remove('open'); }
+
+// About
+function openAbout(){ document.getElementById('about-panel').classList.add('active'); }
+function closeAbout(){ document.getElementById('about-panel').classList.remove('active'); }
+function closeAboutBg(e){ if(e.target===document.getElementById('about-panel')) closeAbout(); }
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ closeBlog(); closeOverlay(); closeAbout(); }
+});
+</script>
+</body>
+</html>
