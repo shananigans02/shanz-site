@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>shanz — ✦</title>
+<title>✦ shanz ✦</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
 <style>
@@ -605,7 +605,7 @@ const MOON = {
   tooltipMain:'on the moon: writing',
   tooltipSub:'click to explore',
   sectionTitle:'writing', sectionDesc:'rabbit holes i go down',
-  type:'empty', projects:[]
+  type:'writing', projects:[]
 };
 
 const SIDE_QUESTS = [
@@ -753,7 +753,14 @@ function openPlanet(planet){
   const list=document.getElementById('project-list');
   list.innerHTML='';
 
-  if(planet.type==='empty'){
+  if(planet.type==='writing'){
+    list.innerHTML=`
+      <div style="font-family:var(--font-display);font-size:16px;color:rgba(245,242,236,0.62);line-height:1.85;padding:16px 20px;">
+        hey, i'm keeping them on <a href="https://substack.com/@notshananigans" target="_blank" style="color:var(--yellow);opacity:0.8;text-decoration:none;border-bottom:1px solid rgba(254,247,220,0.28);transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">substack</a>, for now.
+      </div>
+    `;
+    
+  } else if(planet.type==='empty'){
     list.innerHTML=`<div style="font-family:var(--font-mono);font-size:10px;color:rgba(245,242,236,0.22);letter-spacing:0.15em;padding:52px 20px;text-align:center;">coming soon ✦</div>`;
   } else if(planet.type==='quests'){
     const ql=document.createElement('div'); ql.className='quest-list';
