@@ -111,6 +111,7 @@
     opacity: 0;
     transition: opacity 0.3s;
     top: 50%;
+    /* left set per planet in JS */
   }
   .planet-dot:hover .planet-tooltip { opacity: 1; }
   .planet-tooltip-line {
@@ -422,7 +423,7 @@
     <div id="sun-tooltip">
       <div class="sun-tooltip-line"></div>
       <div class="sun-tooltip-body">
-        <div class="sun-tooltip-text">on the sun: about me</div>
+        <div class="sun-tooltip-text">about me</div>
         <div class="sun-tooltip-sub">click to open</div>
       </div>
     </div>
@@ -468,22 +469,22 @@ const TILT = 0.35;
 const PLANETS = [
   {
     id:'mercury', label:'mercury',
-    color:'#b5b0aa', size:42,
-    orbitRadius:200, speed:0.00008, angle:1.0,
+    color:'#b5b0aa', size:14,
+    orbitRadius:200, speed:0.00024, angle:1.0,
     filled:false, sectionTitle:'mercury', sectionDesc:'',
     type:'empty', projects:[]
   },
   {
     id:'venus', label:'venus',
-    color:'#e8c97a', size:66,
-    orbitRadius:284, speed:0.0000583, angle:3.4,
+    color:'#e8c97a', size:22,
+    orbitRadius:284, speed:0.000175, angle:3.4,
     filled:false, sectionTitle:'venus', sectionDesc:'',
     type:'empty', projects:[]
   },
   {
     id:'earth', label:'earth',
-    color:'#6aafcf', size:78,
-    orbitRadius:384, speed:0.0000417, angle:0.5,
+    color:'#6aafcf', size:26,
+    orbitRadius:384, speed:0.000125, angle:0.5,
     filled:true,
     tooltipMain:'on earth: coding projects',
     tooltipSub:'click to explore',
@@ -558,8 +559,8 @@ const PLANETS = [
   },
   {
     id:'mars', label:'mars',
-    color:'#d4795a', size:60,
-    orbitRadius:504, speed:0.00003, angle:2.2,
+    color:'#d4795a', size:20,
+    orbitRadius:504, speed:0.00009, angle:2.2,
     filled:true,
     tooltipMain:'on mars: side quests',
     tooltipSub:'click to explore',
@@ -568,29 +569,29 @@ const PLANETS = [
   },
   {
     id:'jupiter', label:'jupiter',
-    color:'#c8a87a', size:132,
-    orbitRadius:644, speed:0.0000163, angle:5.0,
+    color:'#c8a87a', size:44,
+    orbitRadius:644, speed:0.000049, angle:5.0,
     filled:false, sectionTitle:'jupiter', sectionDesc:'',
     type:'empty', projects:[]
   },
   {
     id:'saturn', label:'saturn',
-    color:'#d4c090', size:102,
-    orbitRadius:780, speed:0.000012, angle:1.8,
+    color:'#d4c090', size:34,
+    orbitRadius:780, speed:0.000036, angle:1.8,
     filled:false, sectionTitle:'saturn', sectionDesc:'',
     type:'empty', projects:[], hasRing:true
   },
   {
     id:'uranus', label:'uranus',
-    color:'#9ad4d6', size:84,
-    orbitRadius:896, speed:0.000008, angle:3.9,
+    color:'#9ad4d6', size:28,
+    orbitRadius:896, speed:0.000024, angle:3.9,
     filled:false, sectionTitle:'uranus', sectionDesc:'',
     type:'empty', projects:[]
   },
   {
     id:'neptune', label:'neptune',
-    color:'#5577cc', size:78,
-    orbitRadius:1000, speed:0.0000055, angle:0.3,
+    color:'#5577cc', size:26,
+    orbitRadius:1000, speed:0.0000165, angle:0.3,
     filled:false, sectionTitle:'neptune', sectionDesc:'',
     type:'empty', projects:[]
   }
@@ -598,41 +599,25 @@ const PLANETS = [
 
 const MOON = {
   id:'moon', label:'moon / writing',
-  color:'#ccccbb', size:30,
-  orbitRadius:52, speed:0.0003, angle:1.2,
+  color:'#ccccbb', size:10,
+  orbitRadius:52, speed:0.0009, angle:1.2,
   filled:true,
   tooltipMain:'on the moon: writing',
   tooltipSub:'click to explore',
-  sectionTitle:'writing', sectionDesc:'rabbit holes ive went down',
-  type:'writing',
-  projects:[
-    {
-      id:'humans-grading-ai',
-      title:'the humans grading ai',
-      short:'the contractor problem at the heart of frontier model training',
-      link:'https://notshananigans.substack.com/p/the-humans-grading-the-ai-on-the',
-      color:'#7ab8d4',
-      tags:['AI infrastructure','labor marketplaces','post-training','Scale AI']
-    },
-    {
-      id:'inside-atoms',
-      title:'inside atoms',
-      short:'what travis kalanick is actually building for food, layer by layer',
-      link:'https://notshananigans.substack.com/p/inside-atoms-what-travis-kalanick',
-      color:'#e8a870',
-      tags:['food tech','vertical integration','physical AI','Travis Kalanick']
-    }
-  ]
+  sectionTitle:'writing', sectionDesc:'rabbit holes i go down',
+  type:'writing', projects:[]
 };
 
 const SIDE_QUESTS = [
   {name:'run a half marathon',      status:'completed', detail:'3.24.2025 · philly love run'},
   {name:'run a full marathon',      status:'scheduled', detail:'11.1.2026 · nyc marathon'},
-  {name:'produce techno',      status:'progress',  detail:''},
-  {name:'read everything stripe press recommends',   status:'progress',  detail:''},
+  {name:'produce some techno',      status:'progress',  detail:''},
+  {name:'read 26 books for 2026',   status:'progress',  detail:''},
+  {name:'do an ironman',            status:'open',      detail:''},
+  {name:'take an architecture course', status:'open',   detail:''},
   {name:'make a mmorpg game',       status:'open',      detail:''},
   {name:'publish short stories',    status:'open',      detail:''},
-  {name:'make animated series',   status:'open',      detail:''},
+  {name:'create animated series',   status:'open',      detail:''},
   {name:'3d print figurines',       status:'open',      detail:''}
 ];
 
@@ -650,6 +635,7 @@ const canvas = document.getElementById('solar-canvas');
 PLANETS.forEach(p=>{
   const ring=document.createElement('div'); ring.className='orbit-ring';
   const d=p.orbitRadius*2;
+  // Scale ring height by TILT for ellipse appearance
   ring.style.width=d+'px'; ring.style.height=(d*TILT)+'px';
   canvas.appendChild(ring);
 });
@@ -673,6 +659,7 @@ function buildDot(p, isClickable){
   }
 
   if(p.filled && p.tooltipMain){
+    // Tooltip with extending line for content planets
     const tt=document.createElement('div'); tt.className='planet-tooltip';
     const lineLen=38;
     tt.style.left=(p.size/2+4)+'px';
@@ -686,6 +673,7 @@ function buildDot(p, isClickable){
     `;
     dot.appendChild(tt);
   } else {
+    // Simple mono label for empty planets
     const lbl=document.createElement('div'); lbl.className='planet-label';
     lbl.textContent=p.label; lbl.style.left=(p.size/2+7)+'px';
     dot.appendChild(lbl);
@@ -708,7 +696,7 @@ PLANETS.forEach(p=>{
 const moonWrapper=document.getElementById('moon-orbit-wrapper');
 const moonDot=document.createElement('div');
 moonDot.className='planet-dot'; moonDot.id='dot-moon';
-moonDot.style.cssText=`width:${MOON.size}px;height:${MOON.size}px;background:${MOON.color};box-shadow:0 0 ${MOON.size}px ${MOON.size*0.3}px ${MOON.color}40;transform:translate(-50%,-50%);left:0;top:0;position:absolute;`;
+moonDot.style.cssText=`width:${MOON.size}px;height:${MOON.size}px;background:${MOON.color};box-shadow:0 0 10px 3px ${MOON.color}40;transform:translate(-50%,-50%);left:0;top:0;position:absolute;`;
 const moonTT=document.createElement('div'); moonTT.className='planet-tooltip';
 moonTT.style.left=(MOON.size/2+4)+'px'; moonTT.style.transform='translateY(-50%)';
 moonTT.innerHTML=`
@@ -766,26 +754,12 @@ function openPlanet(planet){
   list.innerHTML='';
 
   if(planet.type==='writing'){
-    const pl=document.createElement('div'); pl.className='project-list';
-    planet.projects.forEach(proj=>{
-      const item=document.createElement('div'); item.className='project-item';
-      item.innerHTML=`
-        <div class="proj-planet" style="background:${proj.color}15;border:1px solid ${proj.color}38;">
-          <div style="width:15px;height:15px;border-radius:50%;background:${proj.color};box-shadow:0 0 7px 2px ${proj.color}44;"></div>
-        </div>
-        <div class="proj-info">
-          <div class="proj-title">${proj.title}</div>
-          <div class="proj-short">${proj.short}</div>
-          <div class="proj-stack">${proj.tags.map(t=>`<span class="stack-tag">${t}</span>`).join('')}</div>
-        </div>
-        <div class="proj-links">
-          <a href="${proj.link}" target="_blank" class="proj-link-btn">read ↗</a>
-        </div>
-      `;
-      pl.appendChild(item);
-    });
-    list.appendChild(pl);
-
+    list.innerHTML=`
+      <div style="font-family:var(--font-display);font-size:16px;color:rgba(245,242,236,0.62);line-height:1.85;padding:16px 20px;">
+        hey, i'm keeping them on <a href="https://substack.com/@notshananigans" target="_blank" style="color:var(--yellow);opacity:0.8;text-decoration:none;border-bottom:1px solid rgba(254,247,220,0.28);transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.8">substack</a>, for now.
+      </div>
+    `;
+    
   } else if(planet.type==='empty'){
     list.innerHTML=`<div style="font-family:var(--font-mono);font-size:10px;color:rgba(245,242,236,0.22);letter-spacing:0.15em;padding:52px 20px;text-align:center;">coming soon ✦</div>`;
   } else if(planet.type==='quests'){
