@@ -53,6 +53,18 @@
     position: fixed; inset: 0; z-index: 1;
     display: flex; align-items: center; justify-content: center;
   }
+  #solar-system-scaler {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0; height: 0;
+  }
+  @media (max-width: 480px) {
+    #solar-system-scaler { transform: translate(-50%, -50%) scale(0.3); }
+  }
+  @media (min-width: 481px) and (max-width: 768px) {
+    #solar-system-scaler { transform: translate(-50%, -50%) scale(0.5); }
+  }
   .orbit-ring {
     position: absolute; border-radius: 50%;
     border: 1px solid rgba(254,247,220,0.055);
@@ -222,7 +234,7 @@
   }
   .exp-planet-desc {
     font-family: var(--font-mono); font-size: 9px;
-    color: rgba(245,242,236,0.32); letter-spacing: 0.15em;
+    color: rgba(245,242,236,0.55); letter-spacing: 0.15em;
     margin-top: 7px; text-transform: uppercase;
   }
   .close-btn {
@@ -400,6 +412,11 @@
   }
   .about-body a:hover { opacity: 1; }
 
+  @media (max-width: 768px) {
+    html, body { cursor: auto; }
+    #cursor { display: none; }
+  }
+
   ::-webkit-scrollbar { width: 3px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--gray2); border-radius: 2px; }
@@ -417,17 +434,19 @@
 <div id="hint"><span>click the sun or any planet ✦</span></div>
 
 <div id="solar-canvas">
-  <div id="sun" onclick="openAbout()">
-    <div class="sun-core"></div>
-    <div id="sun-tooltip">
-      <div class="sun-tooltip-line"></div>
-      <div class="sun-tooltip-body">
-        <div class="sun-tooltip-text">on the sun: about me</div>
-        <div class="sun-tooltip-sub">click to open</div>
+  <div id="solar-system-scaler">
+    <div id="sun" onclick="openAbout()">
+      <div class="sun-core"></div>
+      <div id="sun-tooltip">
+        <div class="sun-tooltip-line"></div>
+        <div class="sun-tooltip-body">
+          <div class="sun-tooltip-text">on the sun: about me</div>
+          <div class="sun-tooltip-sub">click to open</div>
+        </div>
       </div>
     </div>
+    <div id="moon-orbit-wrapper"></div>
   </div>
-  <div id="moon-orbit-wrapper"></div>
 </div>
 
 <!-- OVERLAY -->
@@ -451,8 +470,8 @@
     <div class="about-eyebrow">☀️ center of it all</div>
     <div class="about-name">shanz</div>
     <div class="about-body">
-      shanz is interested in building things on the internet that are fun and nice to look at and create no shareholder value.<br><br>
-      please find shanz on <a href="https://x.com/notshananigans/" target="_blank">x.com</a> and send cool projects, art, music, etc.
+      shanz codes, designs, and wanders the corners of the internet.<br><br>
+      find shanz on <a href="https://substack.com/@notshananigans" target="_blank">Substack</a> writing about technology companies of interest, and on <a href="https://x.com/notshananigans/with_replies" target="_blank">X</a>, where projects, art, music, and miscellany are very much solicited.
     </div>
   </div>
 </div>
@@ -598,7 +617,7 @@ const PLANETS = [
 
 const MOON = {
   id:'moon', label:'moon / writing',
-  color:'#ccccbb', size:30,
+  color:'#ff7eb3', size:30,
   orbitRadius:52, speed:0.0003, angle:1.2,
   filled:true,
   tooltipMain:'on the moon: writing',
@@ -608,16 +627,16 @@ const MOON = {
   projects:[
     {
       id:'humans-grading-ai',
-      title:'the humans grading ai',
-      short:'the contractor problem at the heart of frontier model training',
+      title:'the humans grading ai: on the contractor problem at the heart of frontier model training',
+      short:'a look at the companies building the human layer behind frontier AI (Scale AI, Surge AI, Mercor, etc.) and the core challenge at the center of the category: getting elite work from a contractor base that is fluid, fickle, and hard to scale. Recommended if you\'re interested in AI infrastructure, labor marketplaces, expert networks, or where the moat in post-training may actually lie.',
       link:'https://notshananigans.substack.com/p/the-humans-grading-the-ai-on-the',
       color:'#7ab8d4',
       tags:['AI infrastructure','labor marketplaces','post-training','Scale AI']
     },
     {
       id:'inside-atoms',
-      title:'inside atoms',
-      short:'what travis kalanick is actually building for food, layer by layer',
+      title:'inside atoms: what travis kalanick is actually building for food, layer by layer',
+      short:'a breakdown of Atoms, the new company from Uber co-founder and former CEO Travis Kalanick: what its portfolio of food companies actually do, where the robotics and AI are most prominent, and where the story is still more infrastructure than sci-fi. Recommended if you\'re interested in food tech, vertical integration, and physical AI.',
       link:'https://notshananigans.substack.com/p/inside-atoms-what-travis-kalanick',
       color:'#e8a870',
       tags:['food tech','vertical integration','physical AI','Travis Kalanick']
@@ -628,11 +647,11 @@ const MOON = {
 const SIDE_QUESTS = [
   {name:'run a half marathon',      status:'completed', detail:'3.24.2025 · philly love run'},
   {name:'run a full marathon',      status:'scheduled', detail:'11.1.2026 · nyc marathon'},
-  {name:'produce techno',      status:'progress',  detail:''},
-  {name:'read everything stripe press recommends',   status:'progress',  detail:''},
+  {name:'produce techno',           status:'progress',  detail:''},
+  {name:'read everything stripe press recommends', status:'progress', detail:''},
   {name:'make a mmorpg game',       status:'open',      detail:''},
   {name:'publish short stories',    status:'open',      detail:''},
-  {name:'make animated series',   status:'open',      detail:''},
+  {name:'make animated series',     status:'open',      detail:''},
   {name:'3d print figurines',       status:'open',      detail:''}
 ];
 
@@ -646,7 +665,7 @@ for (let i=0;i<200;i++){
 }
 
 // Orbit rings
-const canvas = document.getElementById('solar-canvas');
+const canvas = document.getElementById('solar-system-scaler');
 PLANETS.forEach(p=>{
   const ring=document.createElement('div'); ring.className='orbit-ring';
   const d=p.orbitRadius*2;
@@ -760,6 +779,7 @@ document.querySelectorAll('button,a,#sun').forEach(el=>{
 
 // Overlay
 function openPlanet(planet){
+  cursor.classList.add('hidden');
   document.getElementById('exp-title').textContent=planet.sectionTitle;
   document.getElementById('exp-desc').textContent=planet.sectionDesc;
   const list=document.getElementById('project-list');
@@ -827,7 +847,7 @@ function openPlanet(planet){
   }
   document.getElementById('overlay').classList.add('active');
 }
-function closeOverlay(){ document.getElementById('overlay').classList.remove('active'); }
+function closeOverlay(){ document.getElementById('overlay').classList.remove('active'); cursor.classList.remove('hidden'); }
 function closeOverlayBg(e){ if(e.target===document.getElementById('overlay')) closeOverlay(); }
 
 // Blog
@@ -867,8 +887,8 @@ function openBlog(id){
 function closeBlog(){ document.getElementById('blog-page').classList.remove('open'); }
 
 // About
-function openAbout(){ document.getElementById('about-panel').classList.add('active'); }
-function closeAbout(){ document.getElementById('about-panel').classList.remove('active'); }
+function openAbout(){ cursor.classList.add('hidden'); document.getElementById('about-panel').classList.add('active'); }
+function closeAbout(){ document.getElementById('about-panel').classList.remove('active'); cursor.classList.remove('hidden'); }
 function closeAboutBg(e){ if(e.target===document.getElementById('about-panel')) closeAbout(); }
 
 document.addEventListener('keydown',e=>{
