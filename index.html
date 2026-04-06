@@ -617,7 +617,7 @@ const PLANETS = [
 
 const MOON = {
   id:'moon', label:'moon / writing',
-  color:'##d6cc9e', size:30,
+  color:'#d6cc9e', size:30,
   orbitRadius:52, speed:0.0003, angle:1.2,
   filled:true,
   tooltipMain:'on the moon: writing',
@@ -727,7 +727,7 @@ PLANETS.forEach(p=>{
 const moonWrapper=document.getElementById('moon-orbit-wrapper');
 const moonDot=document.createElement('div');
 moonDot.className='planet-dot'; moonDot.id='dot-moon';
-moonDot.style.cssText=`width:${MOON.size}px;height:${MOON.size}px;background:${MOON.color};box-shadow:0 0 ${MOON.size}px ${MOON.size*0.3}px ${MOON.color}40;transform:translate(-50%,-50%);left:0;top:0;position:absolute;`;
+moonDot.style.cssText=`width:${MOON.size}px;height:${MOON.size}px;background:${MOON.color};box-shadow:0 0 ${MOON.size}px ${MOON.size*0.3}px ${MOON.color}cc;transform:translate(-50%,-50%);left:0;top:0;position:absolute;`;
 const moonTT=document.createElement('div'); moonTT.className='planet-tooltip';
 moonTT.style.left=(MOON.size/2+4)+'px'; moonTT.style.transform='translateY(-50%)';
 moonTT.innerHTML=`
