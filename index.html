@@ -510,22 +510,6 @@ const PLANETS = [
     type:'projects',
     projects:[
       {
-        id:'photobooth',
-        title:'get in da (photo)booth',
-        short:'a diy photobooth experience for any vibe',
-        link:'https://get-in-da-booth.netlify.app/',
-        color:'#e8a8c7',
-        stack:['claude','vscode','netlify','face-api.js','mediapipe hands'],
-        blog:{
-          eyebrow:'project 01',
-          started:`as always, it started with an x post - it was figmathon season, and i came across <a href="https://x.com/lalizlabeth/status/1966002793371619353?s=46" target="_blank" style="color:var(--yellow);opacity:0.8;border-bottom:1px solid rgba(254,247,220,0.28);">@lalizlabeth</a>'s submission for #figmamakeathon where you can meow with your hands. catgirl allegations aside, it's super cute. it also reminded me of <a href="https://x.com/immike_wing/status/2009057802400969150?s=46" target="_blank" style="color:var(--yellow);opacity:0.8;border-bottom:1px solid rgba(254,247,220,0.28);">@immike_wing</a>'s arcteryx beanie detector, which is pretty funny. both got me thinking about what image detection can actually do in the browser, and how approachable it's gotten.`,
-          goal:`so i wanted to make a simple photobooth with sounds. i had just come off a tiktok and megan thee stallion bender, so they made it to the audio sources.`,
-          process:`there's two components: detection logic and sounds.<br/><br/>detection - the app runs three neural network models entirely in the browser using face-api.js. one detects your face, one maps 68 landmark points across it (corners of your mouth, tip of your nose, jaw outline), and one classifies your expression into one of 7 emotions. gestures are computed from those coordinates directly - duck face checks if your mouth width is unusually narrow relative to your face width.<br/><br/>sounds - the fastest way was sourcing mp3s the old-fashioned way: sketchy ad-filled converter sites and gambling on whether something would download with a virus.<br/><br/>claude pretty much one-shotted the working prototype. some back and forth on thresholds and cooldown timers so sounds don't spam, but it came together fast. but i ran into issues that we didn't find an easy fix to:<br/><br/>i was quite excited about megan's ah. but the face landmark model has no tongue keypoint - only that it can detect "mouth very extremely open," which fires on FAH and AH pretty interchangeably. hand gestures (finger gun, heart) are also still broken. the lite model running in-browser is too unreliable - lighting, hand angle, distance all cause it to silently skip. cutting those for now. a vision API call to check for tongue specifically felt like overkill for a silly project.`,
-          result:`issues aside, it can do some stuff:<br/>- live emotion detection with color wash overlays - happy goes warm yellow, surprised triggers a flash and zoom<br/>- fah / ah when ur mouth opens<br/><br/>this whole thing running with no server, backend, or api calls and being browser-native was the most interesting part. what surprised me most was how much you can do locally with models that load from a CDN in a few seconds.`,
-          next:`- snapchat-style filters - i grew up on those, so it'll be fun to recreate face-tracked overlays (dog ears, talking orange, etc.)<br/>- real tongue detection - either a model with actual tongue keypoints or a lightweight vision API call<br/>- hand gestures that actually work - finger gun and korean heart are in the code, they just don't fire reliably. worth digging into whether a heavier model or better calibration fixes it`
-        }
-      },
-      {
         id:'shoyos',
         title:'shoyo fanpage, but infinite and ai generated',
         short:'3D infinite gallery of hinata shoyo figurines',
@@ -539,6 +523,22 @@ const PLANETS = [
           process:'write your process here — tools, roadblocks, etc.',
           result:'write your result here.',
           next:'write your next steps here.'
+        }
+      },
+      {
+        id:'photobooth',
+        title:'get in da (photo)booth',
+        short:'a diy photobooth experience for any vibe',
+        link:'https://get-in-da-booth.netlify.app/',
+        color:'#e8a8c7',
+        stack:['claude','vscode','netlify','face-api.js','mediapipe hands'],
+        blog:{
+          eyebrow:'project 01',
+          started:`as always, it started with an x post - it was figmathon season, and i came across <a href="https://x.com/lalizlabeth/status/1966002793371619353?s=46" target="_blank" style="color:var(--yellow);opacity:0.8;border-bottom:1px solid rgba(254,247,220,0.28);">@lalizlabeth</a>'s submission for #figmamakeathon where you can meow with your hands. catgirl allegations aside, it's super cute. it also reminded me of <a href="https://x.com/immike_wing/status/2009057802400969150?s=46" target="_blank" style="color:var(--yellow);opacity:0.8;border-bottom:1px solid rgba(254,247,220,0.28);">@immike_wing</a>'s arcteryx beanie detector, which is pretty funny. both got me thinking about what image detection can actually do in the browser, and how approachable it's gotten.`,
+          goal:`so i wanted to make a simple photobooth with sounds. i had just come off a tiktok and megan thee stallion bender, so they made it to the audio sources.`,
+          process:`there's two components: detection logic and sounds.<br/><br/>detection - the app runs three neural network models entirely in the browser using face-api.js. one detects your face, one maps 68 landmark points across it (corners of your mouth, tip of your nose, jaw outline), and one classifies your expression into one of 7 emotions. gestures are computed from those coordinates directly - duck face checks if your mouth width is unusually narrow relative to your face width.<br/><br/>sounds - the fastest way was sourcing mp3s the old-fashioned way: sketchy ad-filled converter sites and gambling on whether something would download with a virus.<br/><br/>claude pretty much one-shotted the working prototype. some back and forth on thresholds and cooldown timers so sounds don't spam, but it came together fast. but i ran into issues that we didn't find an easy fix to:<br/><br/>i was quite excited about megan's ah. but the face landmark model has no tongue keypoint - only that it can detect "mouth very extremely open," which fires on FAH and AH pretty interchangeably. hand gestures (finger gun, heart) are also still broken. the lite model running in-browser is too unreliable - lighting, hand angle, distance all cause it to silently skip. cutting those for now. a vision API call to check for tongue specifically felt like overkill for a silly project.`,
+          result:`issues aside, it can do some stuff:<br/>- live emotion detection with color wash overlays - happy goes warm yellow, surprised triggers a flash and zoom<br/>- fah / ah when ur mouth opens<br/><br/>this whole thing running with no server, backend, or api calls and being browser-native was the most interesting part. what surprised me most was how much you can do locally with models that load from a CDN in a few seconds.`,
+          next:`- snapchat-style filters - i grew up on those, so it'll be fun to recreate face-tracked overlays (dog ears, talking orange, etc.)<br/>- real tongue detection - either a model with actual tongue keypoints or a lightweight vision API call<br/>- hand gestures that actually work - finger gun and korean heart are in the code, they just don't fire reliably. worth digging into whether a heavier model or better calibration fixes it`
         }
       },
       {
@@ -617,7 +617,7 @@ const PLANETS = [
 
 const MOON = {
   id:'moon', label:'moon / writing',
-  color:'#e4edf5', size:30,
+  color:'#eef2f5', size:30,
   orbitRadius:52, speed:0.0003, angle:1.2,
   filled:true,
   tooltipMain:'on the moon: writing',
@@ -626,9 +626,17 @@ const MOON = {
   type:'writing',
   projects:[
     {
+      id:'inside-simile',
+      title:'inside simile: what it means to simulate a customer',
+      short:'a look at how simile\'s ai agents work, where they fit into real customer research workflows, and where the most compelling early use cases may be. recommended if you\'re interested in ai for market research, the path from technical research to commercial product, or a gtm/operator view on frontier technology.',
+      link:'https://open.substack.com/pub/notshananigans/p/inside-simile-what-it-means-to-simulate?utm_campaign=post-expanded-share&utm_medium=web',
+      color:'#E05A4E',
+      tags:['customer research','ai agents','enterprise software','go-to-market']
+    },
+    {
       id:'humans-grading-ai',
       title:'the humans grading ai: on the contractor problem at the heart of frontier model training',
-      short:'a look at the companies building the human layer behind frontier AI (Scale AI, Surge AI, Mercor, etc.) and the core challenge at the center of the category: getting elite work from a contractor base that is fluid, fickle, and hard to scale. Recommended if you\'re interested in AI infrastructure, labor marketplaces, expert networks, or where the moat in post-training may actually lie.',
+      short:'a look at the companies building the human layer behind frontier AI (Scale AI, Surge AI, Mercor, etc.) and the core challenge at the center of the category: getting elite work from a contractor base that is fluid and fickle. recommended if you\'re interested in AI infrastructure, labor marketplaces, expert networks, or where the moat in post-training may actually lie.',
       link:'https://notshananigans.substack.com/p/the-humans-grading-the-ai-on-the',
       color:'#7ab8d4',
       tags:['AI infrastructure','labor marketplaces','post-training','Scale AI']
@@ -636,7 +644,7 @@ const MOON = {
     {
       id:'inside-atoms',
       title:'inside atoms: what travis kalanick is actually building for food, layer by layer',
-      short:'a breakdown of Atoms, the new company from Uber co-founder and former CEO Travis Kalanick: what its portfolio of food companies actually do, where the robotics and AI are most prominent, and where the story is still more infrastructure than sci-fi. Recommended if you\'re interested in food tech, vertical integration, and physical AI.',
+      short:'a breakdown of Atoms, the new company from Uber co-founder and former CEO Travis Kalanick: what its portfolio of food companies actually do, where the robotics and AI are most prominent, and where the story is still more infrastructure than sci-fi. recommended if you\'re interested in food tech, vertical integration, and physical AI.',
       link:'https://notshananigans.substack.com/p/inside-atoms-what-travis-kalanick',
       color:'#e8a870',
       tags:['food tech','vertical integration','physical AI','Travis Kalanick']
