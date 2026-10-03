@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>✦ shanz ✦</title>
-<meta name="description" content="shanz: ai product strategy & ops by day. writes commercial analysis of ai companies. builds small things to see how they work."/>
+<meta name="description" content="hi! i'm shana (shanz), an operator in nyc and a dilettante everywhere else. ai products by day, small builds and writing about ai companies after hours."/>
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://shanz-site.vercel.app/"/>
 <meta property="og:title" content="shanz"/>
@@ -66,6 +66,11 @@
   .intro { font-size: 14px; line-height: 1.6; color: var(--dim); max-width: 360px; }
   .intro p + p { margin-top: 6px; }
   .intro b { color: var(--white); font-weight: 600; }
+  .intro .lead { color: var(--white); margin-bottom: 10px; }
+  .intro ul { list-style: none; }
+  .intro li { position: relative; padding-left: 18px; }
+  .intro li + li { margin-top: 6px; }
+  .intro li::before { content: '✦'; position: absolute; left: 0; top: 0; font-size: 10px; color: var(--yellow); opacity: .6; }
   .top-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
   .links { display: flex; gap: 16px; }
   .links a {
@@ -236,9 +241,12 @@
 <header id="top">
   <h1 class="name">shanz</h1>
   <div class="intro">
-    <p><b>by day:</b> ai product strategy &amp; ops, in consulting.</p>
-    <p><b>in my free time:</b> commercial analysis of ai companies. how they find fit, what the plan is, and how execution is going so far.</p>
-    <p><b>and:</b> small builds. i fork repos i like and take them apart to see how they work.</p>
+    <p class="lead">hi! i'm shana, an operator in nyc and a dilettante everywhere else</p>
+    <ul>
+      <li>by day, i'm a consultant taking ai products from strategy to deployment</li>
+      <li>after hours, i vibe code, pull apart open-source projects, and write about ai companies</li>
+      <li>in the gaps, i'm at barry's or wandering a gallery</li>
+    </ul>
   </div>
   <div class="top-row">
     <nav class="links">
@@ -472,10 +480,19 @@ function layout() {
   // half-extents of the system at scale 1
   const halfW = portrait ? maxR * TILT + big / 2 + 70 : maxR + big / 2 + 40;
   const halfH = portrait ? maxR + big / 2 + labelPad : maxR * TILT + big / 2 + labelPad;
-  const s = Math.min((w / 2 - 8) / halfW, (h / 2 - 8) / halfH, 1.2);
+  let s = Math.min((w / 2 - 8) / halfW, (h / 2 - 8) / halfH, 1.2);
   let cy = h / 2;
-  // desktop: the header overlays the top-left, nudge the system down a touch
-  if (!portrait && window.innerWidth >= 900) cy = Math.max(h / 2, 300);
+  // desktop: the intro floats over the top-left; if the system would run into it,
+  // fit the system into the space below the intro instead
+  if (!portrait && window.innerWidth >= 900) {
+    const hb = document.getElementById('top').getBoundingClientRect();
+    const overlaps = (cy - halfH * s) < hb.bottom + 12 && (w / 2 - halfW * s) < hb.right;
+    if (overlaps) {
+      const top = hb.bottom + 12, usable = h - top - 30;
+      s = Math.min((w / 2 - 8) / halfW, usable / 2 / halfH, 1.2);
+      cy = top + usable / 2;
+    }
+  }
   geo = { cx: w / 2, cy, s, portrait };
 
   PLANETS.forEach((p, i) => {
