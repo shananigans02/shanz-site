@@ -2,906 +2,625 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>✦ shanz ✦</title>
+<meta name="description" content="shanz: ai product strategy & ops by day. writes commercial analysis of ai companies. builds small things to see how they work."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://shanz-site.vercel.app/"/>
+<meta property="og:title" content="shanz"/>
+<meta property="og:description" content="ai product strategy & ops by day. commercial analysis of ai companies. small builds."/>
+<meta property="og:image" content="https://shanz-site.vercel.app/og.png"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:site" content="@notshananigans"/>
+<meta name="theme-color" content="#070707"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;700;800&display=swap" rel="stylesheet"/>
 <style>
   :root {
     --yellow: #FEF7DC;
     --black: #070707;
     --white: #f5f2ec;
-    --gray: #2a2a2a;
-    --gray2: #444;
+    --dim: rgba(245,242,236,0.62);
+    --faint: rgba(245,242,236,0.4);
+    --line: rgba(254,247,220,0.09);
     --font-display: 'Syne', sans-serif;
     --font-mono: 'DM Mono', monospace;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    width: 100%; height: 100%;
-    overflow: hidden;
-    background: var(--black);
-    color: var(--white);
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--black); color: var(--white);
     font-family: var(--font-display);
-    cursor: none;
+    min-height: 100dvh;
+  }
+  a { color: inherit; }
+  button { font: inherit; color: inherit; background: none; border: none; }
+  ::selection { background: var(--yellow); color: var(--black); }
+
+  /* custom cursor only on real mice */
+  #cursor { display: none; }
+  @media (hover: hover) and (pointer: fine) {
+    body, button, a { cursor: none; }
+    #cursor {
+      display: block; position: fixed; top: 0; left: 0; z-index: 9999;
+      width: 8px; height: 8px; background: var(--yellow); border-radius: 50%;
+      pointer-events: none; transform: translate(-50%, -50%);
+      transition: width .2s, height .2s; mix-blend-mode: difference;
+    }
+    #cursor.big { width: 28px; height: 28px; }
   }
 
-  #cursor {
-    position: fixed; top: 0; left: 0; z-index: 9999;
-    width: 8px; height: 8px;
-    background: var(--yellow);
-    border-radius: 50%;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-    transition: width 0.2s, height 0.2s;
-    mix-blend-mode: difference;
-  }
-  #cursor.big { width: 28px; height: 28px; }
+  /* stars */
+  #stars { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .star { position: absolute; border-radius: 50%; background: var(--white); opacity: 0;
+    animation: twinkle var(--d,3s) ease-in-out infinite var(--delay,0s); }
+  @keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:var(--op,.6)} }
 
-  #stars {
-    position: fixed; inset: 0; z-index: 0;
-    overflow: hidden; pointer-events: none;
+  /* ── HEADER ── */
+  #top { position: relative; z-index: 20; padding: max(24px, env(safe-area-inset-top)) 20px 8px; }
+  .name {
+    font-weight: 800; font-size: 34px; letter-spacing: -0.02em; line-height: 1;
+    color: var(--yellow); margin-bottom: 14px;
   }
-  .star {
-    position: absolute; border-radius: 50%;
-    background: var(--white); opacity: 0;
-    animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+  .intro { font-size: 14px; line-height: 1.6; color: var(--dim); max-width: 360px; }
+  .intro p + p { margin-top: 6px; }
+  .intro b { color: var(--white); font-weight: 600; }
+  .top-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+  .links { display: flex; gap: 16px; }
+  .links a {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em;
+    color: var(--yellow); text-decoration: none; opacity: .8;
+    border-bottom: 1px solid rgba(254,247,220,.3); padding-bottom: 1px;
   }
-  @keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:var(--op,0.6)} }
+  .links a:hover { opacity: 1; }
+  .toggle { display: inline-flex; border: 1px solid rgba(254,247,220,.18); border-radius: 999px; padding: 2px; }
+  .toggle button {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em;
+    padding: 6px 12px; border-radius: 999px; color: var(--faint);
+    transition: background .2s, color .2s; min-height: 32px;
+  }
+  .toggle button[aria-pressed="true"] { background: var(--yellow); color: var(--black); }
 
-  #solar-canvas {
-    position: fixed; inset: 0; z-index: 1;
-    display: flex; align-items: center; justify-content: center;
+  /* ── ORBIT VIEW ── */
+  body.orbit { height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
+  #stage { position: relative; z-index: 1; flex: 1; min-height: 0; }
+  body.list #stage { display: none; }
+  #system { position: absolute; inset: 0; }
+  .ring { position: absolute; border-radius: 50%; border: 1px solid rgba(254,247,220,.07);
+    transform: translate(-50%,-50%); pointer-events: none; }
+  .body-btn {
+    position: absolute; border-radius: 50%; transform: translate(-50%,-50%);
+    transition: filter .25s; z-index: 5; padding: 0;
   }
-  #solar-system-scaler {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 0; height: 0;
+  .body-btn:hover, .body-btn:focus-visible { filter: brightness(1.18); }
+  .body-btn:focus-visible { outline: 1px dashed var(--yellow); outline-offset: 6px; }
+  .body-btn .orb { width: 100%; height: 100%; border-radius: 50%; transition: transform .3s cubic-bezier(.34,1.56,.64,1); }
+  .body-btn:hover .orb { transform: scale(1.12); }
+  .tag {
+    position: absolute; transform: translateX(-50%); z-index: 50;
+    white-space: nowrap; text-align: center; pointer-events: none;
+    font-weight: 700; font-size: 13px; color: var(--yellow); letter-spacing: .03em;
+    text-shadow: 0 0 6px #070707, 0 0 12px #070707, 0 0 2px #070707;
   }
-  @media (max-width: 480px) {
-    #solar-system-scaler { transform: translate(-50%, -50%) scale(0.3); }
-  }
-  @media (min-width: 481px) and (max-width: 768px) {
-    #solar-system-scaler { transform: translate(-50%, -50%) scale(0.5); }
-  }
-  .orbit-ring {
-    position: absolute; border-radius: 50%;
-    border: 1px solid rgba(254,247,220,0.055);
-    pointer-events: none;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-  }
-
-  #sun {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10; cursor: none;
-  }
-  .sun-core {
-    width: 140px; height: 140px; border-radius: 50%;
+  #sun .orb {
+    position: relative;
     background: radial-gradient(circle at 36% 36%, #fffde0, #FEF7DC 55%, #c8a000);
-    box-shadow: 0 0 55px 18px rgba(254,220,60,0.28), 0 0 120px 50px rgba(254,247,220,0.1);
-    display: flex; align-items: center; justify-content: center;
+  }
+  #sun-glow {
+    position: absolute; border-radius: 50%; transform: translate(-50%,-50%); pointer-events: none; z-index: 2;
+    background: radial-gradient(circle, rgba(254,220,60,.30) 0%, rgba(254,220,60,.12) 30%, rgba(254,247,220,.04) 55%, transparent 70%);
     animation: pulse-sun 4s ease-in-out infinite;
   }
-  @keyframes pulse-sun {
-    0%,100%{box-shadow:0 0 55px 18px rgba(254,220,60,0.28),0 0 120px 50px rgba(254,247,220,0.1)}
-    50%{box-shadow:0 0 90px 32px rgba(254,220,60,0.38),0 0 180px 80px rgba(254,247,220,0.15)}
-  }
-  #sun:hover .sun-core {
-    box-shadow: 0 0 120px 42px rgba(254,220,60,0.5), 0 0 220px 100px rgba(254,247,220,0.18);
-  }
-
-  .planet-orbit {
-    position: absolute; top: 50%; left: 50%;
-    width: 0; height: 0; z-index: 5;
-  }
-  .planet-dot {
-    position: absolute; border-radius: 50%; cursor: none;
-    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-    display: flex; align-items: center; justify-content: center;
-    overflow: visible;
-  }
-  .planet-dot:hover { transform: translate(-50%,-50%) scale(1.55) !important; }
-
-  /* Simple name label for empty planets */
-  .planet-label {
-    position: absolute; white-space: nowrap;
-    font-family: var(--font-mono); font-size: 9px;
-    color: rgba(245,242,236,0.45); letter-spacing: 0.1em;
-    pointer-events: none;
-    top: 50%; transform: translateY(-50%);
-    opacity: 0; transition: opacity 0.25s;
-  }
-  .planet-dot:hover .planet-label { opacity: 1; }
-
-  /* Tooltip-with-line for filled (content) planets */
-  .planet-tooltip {
-    position: absolute;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-    top: 50%;
-  }
-  .planet-dot:hover .planet-tooltip { opacity: 1; }
-  .planet-tooltip-line {
-    height: 1px;
-    background: rgba(254,247,220,0.3);
-    display: block;
-    margin-bottom: 6px;
-  }
-  .planet-tooltip-text {
-    font-family: var(--font-display);
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--yellow);
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-  }
-  .planet-tooltip-sub {
-    font-family: var(--font-mono);
-    font-size: 8px;
-    color: rgba(254,247,220,0.45);
-    letter-spacing: 0.15em;
-    margin-top: 3px;
-    white-space: nowrap;
-  }
-
-  /* Sun tooltip */
-  #sun-tooltip {
-    position: absolute;
-    top: 50%; left: calc(50% + 78px);
-    transform: translateY(-50%);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-    display: flex; align-items: center; gap: 0;
-  }
-  #sun:hover #sun-tooltip { opacity: 1; }
-  .sun-tooltip-line {
-    width: 40px; height: 1px;
-    background: rgba(254,247,220,0.3);
-    flex-shrink: 0;
-  }
-  .sun-tooltip-body { padding-left: 10px; }
-  .sun-tooltip-text {
-    font-family: var(--font-display); font-size: 15px;
-    font-weight: 700; color: var(--yellow); letter-spacing: 0.04em;
-    white-space: nowrap;
-  }
-  .sun-tooltip-sub {
-    font-family: var(--font-mono); font-size: 8px;
-    color: rgba(254,247,220,0.4); letter-spacing: 0.15em;
-    margin-top: 3px; white-space: nowrap;
-  }
-
-  #moon-orbit-wrapper {
-    position: absolute; top: 50%; left: 50%;
-    width: 0; height: 0; z-index: 6; pointer-events: none;
-  }
-  #moon-orbit-wrapper .planet-dot { pointer-events: all; }
-
-  #name-header {
-    position: fixed; top: 28px; left: 36px; z-index: 20; pointer-events: none;
-  }
-  #name-header h1 {
-    font-family: var(--font-display); font-size: 12px;
-    font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase;
-    color: var(--yellow); opacity: 0.9;
-  }
-  #name-header p {
-    font-family: var(--font-mono); font-size: 8px;
-    color: rgba(245,242,236,0.28); letter-spacing: 0.15em; margin-top: 3px;
-  }
-
+  @keyframes pulse-sun { 0%,100%{opacity:.8} 50%{opacity:1} }
   #hint {
-    position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
-    z-index: 20; pointer-events: none;
-    animation: fade-hint 7s ease forwards 1.5s;
+    position: absolute; bottom: max(18px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+    font-family: var(--font-mono); font-size: 11px; color: rgba(245,242,236,.32); letter-spacing: .14em;
+    white-space: nowrap; pointer-events: none; animation: fade-hint 8s ease forwards 2s;
   }
   @keyframes fade-hint { 0%,70%{opacity:1} 100%{opacity:0} }
-  #hint span {
-    font-family: var(--font-mono); font-size: 8px;
-    color: rgba(245,242,236,0.22); letter-spacing: 0.2em;
+
+  @media (min-width: 900px) {
+    body.orbit #top { position: fixed; top: 32px; left: 40px; padding: 0; max-width: 380px; }
+    body.orbit #stage { position: fixed; inset: 0; }
+    .name { font-size: 40px; }
   }
 
-  /* ── OVERLAY ── */
-  #overlay {
-    position: fixed; inset: 0; z-index: 100;
-    background: rgba(7,7,7,0); pointer-events: none;
-    transition: background 0.45s;
-    display: flex; align-items: center; justify-content: center;
+  /* ── LIST VIEW ── */
+  #list { display: none; position: relative; z-index: 1; }
+  body.list #list { display: block; }
+  body.list #top, #list .wrap { max-width: 680px; margin: 0 auto; }
+  body.list #top { padding-top: max(48px, env(safe-area-inset-top)); }
+  #list .wrap { padding: 8px 20px 96px; }
+  .sec { margin-top: 56px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    border-bottom: 1px solid var(--line); padding-bottom: 10px; margin-bottom: 8px; }
+  .sec-title { font-weight: 800; font-size: 22px; color: var(--yellow); }
+  .sec-desc { font-family: var(--font-mono); font-size: 11px; color: var(--faint); letter-spacing: .08em; text-align: right; }
+  .about-text { font-size: 16px; line-height: 1.75; color: var(--dim); }
+  .about-text p + p { margin-top: 14px; }
+  .about-text a { color: var(--yellow); text-decoration: none; border-bottom: 1px solid rgba(254,247,220,.3); }
+
+  /* ── shared item cards ── */
+  .items { display: flex; flex-direction: column; }
+  .item {
+    display: grid; grid-template-columns: 36px 1fr; gap: 14px;
+    padding: 18px 4px; border-bottom: 1px solid var(--line);
   }
-  #overlay.active { background: rgba(7,7,7,0.93); pointer-events: all; }
-  #expanded-panel {
-    position: relative; width: min(780px, 92vw);
-    max-height: 88vh; overflow-y: auto;
-    opacity: 0; transform: scale(0.9);
-    transition: opacity 0.4s cubic-bezier(0.34,1.2,0.64,1), transform 0.4s cubic-bezier(0.34,1.2,0.64,1);
+  .item:last-child { border-bottom: none; }
+  .dot { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; margin-top: 2px; }
+  .dot i { width: 14px; height: 14px; border-radius: 50%; display: block; }
+  .item-title { font-weight: 700; font-size: 16px; line-height: 1.35; color: var(--white); }
+  .item-meta { font-family: var(--font-mono); font-size: 11px; color: var(--faint); letter-spacing: .08em; margin-top: 4px; }
+  .item-blurb { font-size: 14px; line-height: 1.6; color: var(--dim); margin-top: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+  .chip { font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; color: var(--faint);
+    border: 1px solid var(--line); padding: 2px 7px; border-radius: 2px; }
+  .actions { display: flex; gap: 18px; margin-top: 12px; }
+  .act {
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; color: var(--yellow);
+    text-decoration: none; border-bottom: 1px solid rgba(254,247,220,.3); padding: 4px 0 1px; opacity: .85;
+  }
+  .act:hover { opacity: 1; }
+  .more { display: inline-block; margin-top: 14px; }
+  .quest { display: grid; grid-template-columns: 104px 1fr; gap: 12px; align-items: center;
+    padding: 12px 4px; border-bottom: 1px solid var(--line); }
+  .quest:last-child { border-bottom: none; }
+  .q-status { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; padding: 3px 7px;
+    border-radius: 2px; justify-self: start; white-space: nowrap; }
+  .q-status.completed { color: #a0e0c0; border: 1px solid rgba(160,224,192,.3); }
+  .q-status.scheduled { color: #a0c0e8; border: 1px solid rgba(160,192,232,.3); }
+  .q-status.progress  { color: #FEF7DC; border: 1px solid rgba(254,247,220,.22); }
+  .q-status.open      { color: rgba(245,242,236,.3); border: 1px solid rgba(254,247,220,.08); }
+  .q-name { font-size: 14px; color: var(--white); }
+  .q-detail { display: block; font-family: var(--font-mono); font-size: 11px; color: var(--faint); margin-top: 2px; }
+
+  /* ── PANEL (orbit view) ── */
+  #panel {
+    position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
+    background: rgba(7,7,7,0); pointer-events: none; transition: background .4s; padding: 16px;
+  }
+  #panel.active { background: rgba(7,7,7,.97); pointer-events: all; }
+  #panel-inner {
+    width: min(720px, 100%); max-height: 86dvh; overflow-y: auto; overscroll-behavior: contain;
+    opacity: 0; transform: scale(.94); transition: opacity .35s, transform .35s cubic-bezier(.34,1.2,.64,1);
     scrollbar-width: none;
   }
-  #expanded-panel::-webkit-scrollbar { display: none; }
-  #overlay.active #expanded-panel { opacity: 1; transform: scale(1); }
+  #panel-inner::-webkit-scrollbar { display: none; }
+  #panel.active #panel-inner { opacity: 1; transform: none; }
+  .panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 14px; }
+  .panel-title { font-weight: 800; font-size: clamp(28px, 7vw, 44px); color: var(--yellow); line-height: 1; }
+  .panel-desc { font-family: var(--font-mono); font-size: 11px; color: var(--faint); letter-spacing: .1em; margin-top: 8px; }
+  .close {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; padding: 8px 12px;
+    border: 1px solid rgba(254,247,220,.2); border-radius: 2px; flex-shrink: 0; min-height: 36px;
+  }
+  .close:hover { border-color: var(--yellow); color: var(--yellow); }
 
-  .exp-header {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    margin-bottom: 34px;
+  /* ── DETAIL PAGE ── */
+  #detail {
+    position: fixed; inset: 0; z-index: 200; background: var(--black); overflow-y: auto;
+    transform: translateX(100%); transition: transform .5s cubic-bezier(.77,0,.18,1); visibility: hidden;
   }
-  .exp-planet-name {
-    font-family: var(--font-display); font-size: clamp(24px,5vw,44px);
-    font-weight: 800; color: var(--yellow); letter-spacing: -0.01em; line-height: 1;
-  }
-  .exp-planet-desc {
-    font-family: var(--font-mono); font-size: 9px;
-    color: rgba(245,242,236,0.55); letter-spacing: 0.15em;
-    margin-top: 7px; text-transform: uppercase;
-  }
-  .close-btn {
-    background: none; border: 1px solid rgba(254,247,220,0.16);
-    color: var(--white); font-family: var(--font-mono);
-    font-size: 9px; letter-spacing: 0.14em; padding: 7px 12px;
-    cursor: none; transition: border-color 0.2s, color 0.2s;
-    border-radius: 2px; flex-shrink: 0; margin-top: 4px;
-  }
-  .close-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+  #detail.open { transform: none; visibility: visible; }
+  .detail-inner { max-width: 650px; margin: 0 auto; padding: max(40px, env(safe-area-inset-top)) 20px 120px; }
+  .back { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; color: var(--faint);
+    margin-bottom: 40px; padding: 6px 0; }
+  .back:hover { color: var(--yellow); }
+  .d-eyebrow { font-family: var(--font-mono); font-size: 11px; letter-spacing: .16em; color: var(--yellow); opacity: .6; margin-bottom: 12px; }
+  .d-title { font-weight: 800; font-size: clamp(28px, 7vw, 46px); line-height: 1.05; letter-spacing: -.02em; margin-bottom: 14px; }
+  .d-meta { font-family: var(--font-mono); font-size: 12px; color: var(--faint); line-height: 1.6;
+    padding-bottom: 24px; margin-bottom: 36px; border-bottom: 1px solid var(--line); }
+  .d-meta a { color: var(--yellow); text-decoration: none; border-bottom: 1px solid rgba(254,247,220,.3); }
+  .d-sec { margin-bottom: 36px; }
+  .d-num { font-family: var(--font-mono); font-size: 10px; color: var(--yellow); opacity: .45; letter-spacing: .18em; margin-bottom: 6px; }
+  .d-h { font-weight: 700; font-style: italic; font-size: 18px; margin-bottom: 10px; }
+  .d-body { font-size: 16px; line-height: 1.8; color: var(--dim); }
+  .d-body a { color: var(--yellow); text-decoration: none; border-bottom: 1px solid rgba(254,247,220,.3); }
+  .d-body ul { padding-left: 18px; }
+  .d-body li + li { margin-top: 4px; }
+  .d-stack { margin-top: 44px; }
+  .d-stack .chip { color: var(--yellow); opacity: .7; border-color: rgba(254,247,220,.16); font-size: 11px; }
 
-  /* Project list */
-  .project-list { display: flex; flex-direction: column; gap: 2px; }
-  .project-item {
-    display: flex; align-items: center; gap: 16px;
-    padding: 15px 16px;
-    border: 1px solid rgba(254,247,220,0.07); border-radius: 4px;
-    transition: border-color 0.2s, background 0.2s;
+  @media (prefers-reduced-motion: reduce) {
+    .star, #sun-glow { animation: none; }
+    .star { opacity: .35; }
   }
-  .project-item:hover { border-color: rgba(254,247,220,0.15); background: rgba(254,247,220,0.025); }
-  .proj-planet {
-    width: 36px; height: 36px; border-radius: 50%;
-    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  }
-  .proj-info { flex: 1; min-width: 0; }
-  .proj-title {
-    font-family: var(--font-display); font-size: 14px;
-    font-weight: 700; color: var(--white); margin-bottom: 3px;
-  }
-  .proj-short {
-    font-family: var(--font-mono); font-size: 9px;
-    color: rgba(245,242,236,0.35); letter-spacing: 0.07em; line-height: 1.5;
-  }
-  .proj-links { display: flex; gap: 10px; flex-shrink: 0; align-items: center; }
-  .proj-link-btn {
-    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em;
-    text-decoration: none; color: rgba(245,242,236,0.42);
-    border: none; border-bottom: 1px solid rgba(254,247,220,0.12);
-    padding-bottom: 1px; background: none;
-    transition: color 0.2s, border-color 0.2s; cursor: none;
-  }
-  .proj-link-btn:hover, .proj-link-btn.detail { color: var(--yellow); border-bottom-color: var(--yellow); }
-  .proj-stack { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
-  .stack-tag {
-    font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.09em;
-    color: rgba(245,242,236,0.28); border: 1px solid rgba(254,247,220,0.08);
-    padding: 1px 5px; border-radius: 2px;
-  }
-
-  /* Quest list */
-  .quest-list { display: flex; flex-direction: column; gap: 4px; }
-  .quest-item {
-    display: flex; align-items: center; gap: 14px;
-    padding: 11px 16px;
-    border: 1px solid rgba(254,247,220,0.06); border-radius: 4px;
-  }
-  .quest-status {
-    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.1em;
-    padding: 2px 7px; border-radius: 2px; flex-shrink: 0; white-space: nowrap;
-  }
-  .quest-status.completed { color: #a0e0c0; border: 1px solid rgba(160,224,192,0.28); }
-  .quest-status.scheduled { color: #a0c0e8; border: 1px solid rgba(160,192,232,0.28); }
-  .quest-status.progress  { color: #FEF7DC; border: 1px solid rgba(254,247,220,0.2); opacity: 0.65; }
-  .quest-status.open      { color: rgba(245,242,236,0.2); border: 1px solid rgba(254,247,220,0.06); }
-  .quest-name {
-    font-family: var(--font-display); font-size: 13px; color: var(--white); font-weight: 500;
-  }
-  .quest-detail {
-    font-family: var(--font-mono); font-size: 8px;
-    color: rgba(245,242,236,0.25); letter-spacing: 0.1em; margin-left: auto;
-  }
-
-  /* ── BLOG PAGE ── */
-  #blog-page {
-    position: fixed; inset: 0; z-index: 200;
-    background: var(--black); overflow-y: auto;
-    transform: translateX(100%);
-    transition: transform 0.5s cubic-bezier(0.77,0,0.18,1);
-    scrollbar-width: thin; scrollbar-color: var(--gray) transparent;
-  }
-  #blog-page.open { transform: translateX(0); }
-  .blog-inner { max-width: 650px; margin: 0 auto; padding: 56px 32px 120px; }
-  .blog-back {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em;
-    color: rgba(245,242,236,0.32); text-transform: uppercase;
-    background: none; border: none; cursor: none;
-    transition: color 0.2s; margin-bottom: 50px;
-  }
-  .blog-back:hover { color: var(--yellow); }
-  .blog-back::before { content: '←'; font-size: 11px; }
-  .blog-eyebrow {
-    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em;
-    color: var(--yellow); opacity: 0.55; text-transform: uppercase; margin-bottom: 13px;
-  }
-  .blog-title {
-    font-family: var(--font-display); font-size: clamp(24px,5vw,48px);
-    font-weight: 800; color: var(--white); line-height: 1.05;
-    letter-spacing: -0.02em; margin-bottom: 16px;
-  }
-  .blog-meta {
-    display: flex; gap: 12px; flex-wrap: wrap;
-    font-family: var(--font-mono); font-size: 9px;
-    color: rgba(245,242,236,0.26); letter-spacing: 0.12em;
-    margin-bottom: 42px; padding-bottom: 26px;
-    border-bottom: 1px solid rgba(254,247,220,0.055);
-  }
-  .blog-meta a { color: var(--yellow); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; }
-  .blog-meta a:hover { opacity: 1; }
-  .blog-section { margin-bottom: 42px; }
-  .blog-section-num {
-    font-family: var(--font-mono); font-size: 8px;
-    color: var(--yellow); opacity: 0.4; letter-spacing: 0.2em; margin-bottom: 7px;
-  }
-  .blog-section-title {
-    font-family: var(--font-display); font-size: 17px; font-weight: 700;
-    color: var(--white); margin-bottom: 12px; font-style: italic;
-  }
-  .blog-section-body {
-    font-family: var(--font-display); font-size: 15px;
-    color: rgba(245,242,236,0.62); line-height: 1.85;
-  }
-  hr.blog-divider { border: none; border-top: 1px solid rgba(254,247,220,0.05); margin: 34px 0; }
-  .blog-stack-section { margin-top: 50px; }
-  .blog-stack-title {
-    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em;
-    color: rgba(245,242,236,0.22); text-transform: uppercase; margin-bottom: 9px;
-  }
-  .blog-stack-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .blog-stack-tag {
-    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.1em;
-    color: var(--yellow); opacity: 0.5;
-    border: 1px solid rgba(254,247,220,0.12); padding: 3px 8px; border-radius: 2px;
-  }
-
-  /* ── ABOUT PANEL ── */
-  #about-panel {
-    position: fixed; inset: 0; z-index: 150;
-    background: rgba(7,7,7,0); pointer-events: none;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.45s;
-  }
-  #about-panel.active { background: rgba(7,7,7,0.94); pointer-events: all; }
-  #about-inner {
-    max-width: 490px; width: 90%;
-    opacity: 0; transform: scale(0.9);
-    transition: all 0.4s cubic-bezier(0.34,1.2,0.64,1);
-    position: relative;
-  }
-  #about-panel.active #about-inner { opacity: 1; transform: scale(1); }
-  .about-close {
-    position: absolute; top: -40px; right: 0;
-    background: none; border: 1px solid rgba(254,247,220,0.16);
-    color: var(--white); font-family: var(--font-mono);
-    font-size: 9px; letter-spacing: 0.14em; padding: 7px 12px;
-    cursor: none; border-radius: 2px; transition: border-color 0.2s, color 0.2s;
-  }
-  .about-close:hover { border-color: var(--yellow); color: var(--yellow); }
-  .about-eyebrow {
-    font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em;
-    color: var(--yellow); opacity: 0.5; text-transform: uppercase; margin-bottom: 16px;
-  }
-  .about-name {
-    font-family: var(--font-display); font-size: 50px; font-weight: 800;
-    color: var(--yellow); line-height: 1; margin-bottom: 20px; letter-spacing: -0.02em;
-  }
-  .about-body {
-    font-family: var(--font-display); font-size: 16px;
-    color: rgba(245,242,236,0.58); line-height: 1.8;
-  }
-  .about-body a {
-    color: var(--yellow); opacity: 0.8; text-decoration: none;
-    border-bottom: 1px solid rgba(254,247,220,0.28);
-    transition: opacity 0.2s;
-  }
-  .about-body a:hover { opacity: 1; }
-
-  @media (max-width: 768px) {
-    html, body { cursor: auto; }
-    #cursor { display: none; }
-  }
-
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--gray2); border-radius: 2px; }
 </style>
 </head>
-<body>
+<body class="orbit">
 
 <div id="cursor"></div>
 <div id="stars"></div>
 
-<div id="name-header">
-  <h1>shanz</h1>
-</div>
-
-<div id="hint"><span>click the sun or any planet ✦</span></div>
-
-<div id="solar-canvas">
-  <div id="solar-system-scaler">
-    <div id="sun" onclick="openAbout()">
-      <div class="sun-core"></div>
-      <div id="sun-tooltip">
-        <div class="sun-tooltip-line"></div>
-        <div class="sun-tooltip-body">
-          <div class="sun-tooltip-text">on the sun: about me</div>
-          <div class="sun-tooltip-sub">click to open</div>
-        </div>
-      </div>
-    </div>
-    <div id="moon-orbit-wrapper"></div>
+<header id="top">
+  <h1 class="name">shanz</h1>
+  <div class="intro">
+    <p><b>by day:</b> ai product strategy &amp; ops, in consulting.</p>
+    <p><b>in my free time:</b> commercial analysis of ai companies. how they find fit, what the plan is, and how execution is going so far.</p>
+    <p><b>and:</b> small builds. i fork repos i like and take them apart to see how they work.</p>
   </div>
-</div>
+  <div class="top-row">
+    <nav class="links">
+      <a href="https://substack.com/@notshananigans" target="_blank" rel="noopener">substack ↗</a>
+      <a href="https://x.com/notshananigans" target="_blank" rel="noopener">x ↗</a>
+    </nav>
+    <div class="toggle" role="group" aria-label="view">
+      <button type="button" data-view="orbit" aria-pressed="true">orbit</button>
+      <button type="button" data-view="list" aria-pressed="false">list</button>
+    </div>
+  </div>
+</header>
 
-<!-- OVERLAY -->
-<div id="overlay" onclick="closeOverlayBg(event)">
-  <div id="expanded-panel">
-    <div class="exp-header">
+<main id="stage" aria-label="orbit view">
+  <div id="system"></div>
+  <div id="hint">tap the sun or any planet ✦</div>
+</main>
+
+<main id="list" aria-label="list view"><div class="wrap" id="list-wrap"></div></main>
+
+<div id="panel" role="dialog" aria-modal="true">
+  <div id="panel-inner">
+    <div class="panel-head">
       <div>
-        <div class="exp-planet-name" id="exp-title"></div>
-        <div class="exp-planet-desc" id="exp-desc"></div>
+        <div class="panel-title" id="panel-title"></div>
+        <div class="panel-desc" id="panel-desc"></div>
       </div>
-      <button class="close-btn" onclick="closeOverlay()">close ✕</button>
+      <button type="button" class="close" onclick="closePanel()">close ✕</button>
     </div>
-    <div id="project-list"></div>
+    <div id="panel-body"></div>
   </div>
 </div>
 
-<!-- ABOUT PANEL -->
-<div id="about-panel" onclick="closeAboutBg(event)">
-  <div id="about-inner">
-    <button class="about-close" onclick="closeAbout()">close ✕</button>
-    <div class="about-eyebrow">☀️ center of it all</div>
-    <div class="about-name">shanz</div>
-    <div class="about-body">
-      shanz codes, designs, and wanders the corners of the internet.<br><br>
-      find shanz on <a href="https://substack.com/@notshananigans" target="_blank">substack</a> writing about technology companies of interest, and on <a href="https://x.com/notshananigans/with_replies" target="_blank">X</a>, where projects, art, music, and miscellany are very much solicited :D
-    </div>
-  </div>
-</div>
-
-<!-- BLOG PAGE -->
-<div id="blog-page">
-  <div class="blog-inner" id="blog-inner"></div>
-</div>
+<div id="detail" role="dialog" aria-modal="true"><div class="detail-inner" id="detail-inner"></div></div>
 
 <script>
-const TILT = 0.35;
+/* ───────────── CONTENT ───────────── */
 
-const PLANETS = [
+const ABOUT = `
+  <p>by day i work in ai product strategy &amp; ops, in consulting. most of it is sitting between the people who want an ai product and the engineers building it, and getting it from prototype to something people actually use. before that i did diligence and integration work on tech deals.</p>
+  <p>in my free time i write long commercial breakdowns of ai companies: who buys, why, what has to be true, and how the plan is going so far.</p>
+  <p>i also build small things. mostly i fork repos i think are cool and take them apart until i understand them.</p>
+  <p>based in nyc. find me on <a href="https://substack.com/@notshananigans" target="_blank" rel="noopener">substack</a> and <a href="https://x.com/notshananigans" target="_blank" rel="noopener">x</a>, where projects, art, music and miscellany are very much solicited :D</p>
+`;
+
+const WRITING = [
   {
-    id:'mercury', label:'mercury',
-    color:'#b5b0aa', size:42,
-    orbitRadius:200, speed:0.00008, angle:1.0,
-    filled:false, sectionTitle:'mercury', sectionDesc:'',
-    type:'empty', projects:[]
+    title: 'inside simile: what it means to simulate human behavior for enterprises',
+    date: 'apr 2026',
+    blurb: "how simile's ai agents work, where they fit into real customer research workflows, and a scorecard for which enterprise use cases to go after first.",
+    tags: ['go-to-market', 'ai agents', 'enterprise software', 'customer research'],
+    link: 'https://notshananigans.substack.com/p/inside-simile-what-it-means-to-simulate',
+    color: '#E05A4E'
   },
   {
-    id:'venus', label:'venus',
-    color:'#e8c97a', size:66,
-    orbitRadius:284, speed:0.0000583, angle:3.4,
-    filled:false, sectionTitle:'venus', sectionDesc:'',
-    type:'empty', projects:[]
-  },
-  {
-    id:'earth', label:'earth',
-    color:'#6aafcf', size:78,
-    orbitRadius:384, speed:0.0000417, angle:0.5,
-    filled:true,
-    tooltipMain:'on earth: coding projects',
-    tooltipSub:'click to explore',
-    sectionTitle:'coding projects', sectionDesc:'things i built',
-    type:'projects',
-    projects:[
-      {
-        id:'shoyos',
-        title:'shoyo fanpage, but infinite and ai generated',
-        short:'3D infinite gallery of hinata shoyo figurines',
-        link:'https://just-shoyo-activities-v2.vercel.app/',
-        color:'#FEF7DC',
-        stack:['React','Three.js','Vite','Vercel'],
-        blog:{
-          eyebrow:'project 02',
-          started:'write your story here — how did this start?',
-          goal:'write your goal here.',
-          process:'write your process here — tools, roadblocks, etc.',
-          result:'write your result here.',
-          next:'write your next steps here.'
-        }
-      },
-      {
-        id:'photobooth',
-        title:'get in da (photo)booth',
-        short:'a diy photobooth experience for any vibe',
-        link:'https://get-in-da-booth.netlify.app/',
-        color:'#e8a8c7',
-        stack:['claude','vscode','netlify','face-api.js','mediapipe hands'],
-        blog:{
-          eyebrow:'project 01',
-          started:`as always, it started with an x post - it was figmathon season, and i came across <a href="https://x.com/lalizlabeth/status/1966002793371619353?s=46" target="_blank" style="color:var(--yellow);opacity:0.8;border-bottom:1px solid rgba(254,247,220,0.28);">@lalizlabeth</a>'s submission for #figmamakeathon where you can meow with your hands. catgirl allegations aside, it's super cute. it also reminded me of <a href="https://x.com/immike_wing/status/2009057802400969150?s=46" target="_blank" style="color:var(--yellow);opacity:0.8;border-bottom:1px solid rgba(254,247,220,0.28);">@immike_wing</a>'s arcteryx beanie detector, which is pretty funny. both got me thinking about what image detection can actually do in the browser, and how approachable it's gotten.`,
-          goal:`so i wanted to make a simple photobooth with sounds. i had just come off a tiktok and megan thee stallion bender, so they made it to the audio sources.`,
-          process:`there's two components: detection logic and sounds.<br/><br/>detection - the app runs three neural network models entirely in the browser using face-api.js. one detects your face, one maps 68 landmark points across it (corners of your mouth, tip of your nose, jaw outline), and one classifies your expression into one of 7 emotions. gestures are computed from those coordinates directly - duck face checks if your mouth width is unusually narrow relative to your face width.<br/><br/>sounds - the fastest way was sourcing mp3s the old-fashioned way: sketchy ad-filled converter sites and gambling on whether something would download with a virus.<br/><br/>claude pretty much one-shotted the working prototype. some back and forth on thresholds and cooldown timers so sounds don't spam, but it came together fast. but i ran into issues that we didn't find an easy fix to:<br/><br/>i was quite excited about megan's ah. but the face landmark model has no tongue keypoint - only that it can detect "mouth very extremely open," which fires on FAH and AH pretty interchangeably. hand gestures (finger gun, heart) are also still broken. the lite model running in-browser is too unreliable - lighting, hand angle, distance all cause it to silently skip. cutting those for now. a vision API call to check for tongue specifically felt like overkill for a silly project.`,
-          result:`issues aside, it can do some stuff:<br/>- live emotion detection with color wash overlays - happy goes warm yellow, surprised triggers a flash and zoom<br/>- fah / ah when ur mouth opens<br/><br/>this whole thing running with no server, backend, or api calls and being browser-native was the most interesting part. what surprised me most was how much you can do locally with models that load from a CDN in a few seconds.`,
-          next:`- snapchat-style filters - i grew up on those, so it'll be fun to recreate face-tracked overlays (dog ears, talking orange, etc.)<br/>- real tongue detection - either a model with actual tongue keypoints or a lightweight vision API call<br/>- hand gestures that actually work - finger gun and korean heart are in the code, they just don't fire reliably. worth digging into whether a heavier model or better calibration fixes it`
-        }
-      },
-      {
-        id:'newyorker',
-        title:'are u really a new yorker',
-        short:'interactive quiz to prove urself as a new york transplant',
-        link:'#',
-        color:'#c7e8a8',
-        stack:['tbd'],
-        blog:{
-          eyebrow:'project 04',
-          started:'tbd',
-          goal:'tbd',
-          process:'tbd',
-          result:'tbd',
-          next:'tbd'
-        }
-      },
-      {
-        id:'yourunme',
-        title:'you run me',
-        short:'animation where you can change my speed',
-        link:'#',
-        color:'#e8c7a8',
-        stack:['tbd'],
-        blog:{
-          eyebrow:'project 04',
-          started:'tbd',
-          goal:'tbd',
-          process:'tbd',
-          result:'tbd',
-          next:'tbd'
-        }
-      }
-    ]
-  },
-  {
-    id:'mars', label:'mars',
-    color:'#d4795a', size:60,
-    orbitRadius:504, speed:0.00003, angle:2.2,
-    filled:true,
-    tooltipMain:'on mars: side quests',
-    tooltipSub:'click to explore',
-    sectionTitle:'side quests', sectionDesc:'do we have quests in common?',
-    type:'quests', projects:[]
-  },
-  {
-    id:'jupiter', label:'jupiter',
-    color:'#c8a87a', size:132,
-    orbitRadius:644, speed:0.0000163, angle:5.0,
-    filled:false, sectionTitle:'jupiter', sectionDesc:'',
-    type:'empty', projects:[]
-  },
-  {
-    id:'saturn', label:'saturn',
-    color:'#d4c090', size:102,
-    orbitRadius:780, speed:0.000012, angle:1.8,
-    filled:false, sectionTitle:'saturn', sectionDesc:'',
-    type:'empty', projects:[], hasRing:true
-  },
-  {
-    id:'uranus', label:'uranus',
-    color:'#9ad4d6', size:84,
-    orbitRadius:896, speed:0.000008, angle:3.9,
-    filled:false, sectionTitle:'uranus', sectionDesc:'',
-    type:'empty', projects:[]
-  },
-  {
-    id:'neptune', label:'neptune',
-    color:'#5577cc', size:78,
-    orbitRadius:1000, speed:0.0000055, angle:0.3,
-    filled:false, sectionTitle:'neptune', sectionDesc:'',
-    type:'empty', projects:[]
+    title: 'the humans grading ai: on the contractor problem at the heart of frontier model training',
+    date: 'apr 2026',
+    blurb: 'scale, surge, mercor and the rest sell expert judgment to frontier labs. the hard part is getting consistent, elite work out of a contractor base that can leave whenever it wants.',
+    tags: ['ai infrastructure', 'post-training', 'marketplaces', 'operations'],
+    link: 'https://notshananigans.substack.com/p/the-humans-grading-the-ai-on-the',
+    color: '#7ab8d4'
   }
 ];
 
-const MOON = {
-  id:'moon', label:'moon / writing',
-  color:'#eef2f5', size:30,
-  orbitRadius:52, speed:0.0003, angle:1.2,
-  filled:true,
-  tooltipMain:'on the moon: writing',
-  tooltipSub:'click to explore',
-  sectionTitle:'writing', sectionDesc:'rabbit holes ive went down',
-  type:'writing',
-  projects:[
-    {
-      id:'inside-simile',
-      title:'inside simile: what it means to simulate human behavior for enterprises',
-      short:'a look at how simile\'s ai agents work, where they fit into real customer research workflows, and where the most compelling early use cases may be. recommended if you\'re interested in ai for market research, the path from technical research to commercial product, or a gtm/operator view on frontier technology.',
-      link:'https://open.substack.com/pub/notshananigans/p/inside-simile-what-it-means-to-simulate?utm_campaign=post-expanded-share&utm_medium=web',
-      color:'#E05A4E',
-      tags:['customer research','ai agents','enterprise software','go-to-market']
-    },
-    {
-      id:'humans-grading-ai',
-      title:'the humans grading ai: on the contractor problem at the heart of frontier model training',
-      short:'a look at the companies building the human layer behind frontier AI (Scale AI, Surge AI, Mercor, etc.) and the core challenge at the center of the category: getting elite work from a contractor base that is fluid and fickle. recommended if you\'re interested in AI infrastructure, labor marketplaces, expert networks, or where the moat in post-training may actually lie.',
-      link:'https://notshananigans.substack.com/p/the-humans-grading-the-ai-on-the',
-      color:'#7ab8d4',
-      tags:['AI infrastructure','labor marketplaces','post-training','Scale AI']
-    },
-    {
-      id:'inside-atoms',
-      title:'inside atoms: what travis kalanick is actually building for food, layer by layer',
-      short:'a breakdown of Atoms, the new company from Uber co-founder and former CEO Travis Kalanick: what its portfolio of food companies actually do, where the robotics and AI are most prominent, and where the story is still more infrastructure than sci-fi. recommended if you\'re interested in food tech, vertical integration, and physical AI.',
-      link:'https://notshananigans.substack.com/p/inside-atoms-what-travis-kalanick',
-      color:'#e8a870',
-      tags:['food tech','vertical integration','physical AI','Travis Kalanick']
+const LINK = (href, text) => `<a href="${href}" target="_blank" rel="noopener">${text}</a>`;
+
+const BUILDS = [
+  {
+    id: 'photobooth',
+    title: 'get in da (photo)booth',
+    short: 'a browser photobooth that reacts to your face. three models, no server.',
+    link: 'https://get-in-da-booth.netlify.app/',
+    color: '#e8a8c7',
+    stack: ['face-api.js', 'mediapipe hands', 'claude', 'netlify'],
+    sections: {
+      started: `as always, it started with an x post. it was figmathon season, and i came across ${LINK('https://x.com/lalizlabeth/status/1966002793371619353?s=46', "@lalizlabeth")}'s #figmamakeathon submission where you can meow with your hands. catgirl allegations aside, it's super cute. it also reminded me of ${LINK('https://x.com/immike_wing/status/2009057802400969150?s=46', "@immike_wing")}'s arc'teryx beanie detector, which is pretty funny. both got me thinking about what image detection can actually do in the browser, and how approachable it's gotten.`,
+      goal: `a simple photobooth with sounds. i had just come off a tiktok and megan thee stallion bender, so they made it into the audio.`,
+      process: `there are two components: detection and sounds.<br/><br/><b>detection:</b> the app runs three neural network models entirely in the browser with face-api.js. one finds your face, one maps 68 landmark points across it (corners of your mouth, tip of your nose, jaw outline), and one classifies your expression into one of 7 emotions. gestures are computed from those coordinates directly. duck face checks whether your mouth is unusually narrow relative to your face.<br/><br/><b>sounds:</b> short clips, triggered on detection, with cooldown timers so they don't spam.<br/><br/>claude pretty much one-shotted the working prototype. there was some back and forth on thresholds and cooldowns, but it came together fast. two problems didn't have an easy fix:<br/><br/>i was quite excited about megan's ah. the landmark model has no tongue keypoint, only "mouth very extremely open," which fires on fah and ah pretty interchangeably. hand gestures (finger gun, heart) are also unreliable. the lite model running in-browser silently skips frames depending on lighting, hand angle and distance. i cut both for now. a vision api call to check for tongue specifically felt like overkill for a silly project.`,
+      result: `issues aside, it can do some stuff:<br/><ul><li>live emotion detection with color washes. happy goes warm yellow, surprised triggers a flash and zoom</li><li>fah / ah when your mouth opens</li></ul><br/>the part i found most interesting: no server, no backend, no api calls. models load from a cdn in a few seconds and everything runs on your device.`,
+      next: `<ul><li>snapchat-style filters. i grew up on those, so face-tracked overlays (dog ears, talking orange) will be fun to recreate</li><li>real tongue detection, either a model with tongue keypoints or a lightweight vision api call</li><li>hand gestures that work. finger gun and korean heart are in the code, they just don't fire reliably. worth testing whether a heavier model or better calibration fixes it</li></ul>`
     }
-  ]
+  },
+  {
+    id: 'shoyo',
+    title: 'shoyo, but infinite',
+    short: 'an open-source infinite canvas, forked and refilled with ai-generated hinata figurines.',
+    link: 'https://just-shoyo-activities-v2.vercel.app/',
+    color: '#f0a050',
+    stack: ['react', 'three.js / r3f', 'vite', 'tailwind', 'chatgpt images', 'vercel'],
+    sections: {
+      started: `${LINK('https://x.com/phatggg', '@phatggg')} built ${LINK('https://www.yyyyaaa.com/', 'yyyyaaa.com')}: an endless white void full of tiny dioramas of the same guy doing strange office tasks. very severance. then he ${LINK('https://github.com/yyyyaaa/yyyyaaa-2026', 'open-sourced it')}. i wanted to know if i could keep the engine and swap everything on top of it.`,
+      goal: `same infinite canvas, different universe: hinata shoyo from haikyuu, in figurine form, doing small ordinary things forever. something you wander through more than read.`,
+      process: `two parts: the engine and the images.<br/><br/><b>engine:</b> the canvas is react three fiber. the world is split into chunks, and only chunks near the camera render. images lazy-load, fade with depth, and you can drag, scroll, pinch or use wasd. i mostly left the engine alone and learned it by reading it. my changes sat on top: the image manifest, the overlay (logo, a "fan request" button that opens a pre-filled post to me on x, an fyi panel crediting the original), and seo.<br/><br/><b>images:</b> 14 figurine dioramas generated in chatgpt from one long prompt. the hard part was consistency. early outputs drifted chibi or landed on blocky, lego-looking bases, so the prompt grew a negative section that bans both. the full prompt is in the fyi panel on the site if you want to make your own.`,
+      result: `an infinite gallery of hinata spiking, sleeping, feeding crows, carrying groceries, eating ramen and texting kageyama. it works on phones with touch. the engine held up fine with a completely different set of images, which was the real test of the fork.`,
+      next: `<ul><li>fulfill fan requests as they come in</li><li>more poses, so the canvas repeats less as you wander</li></ul>`
+    }
+  }
+];
+
+const QUESTS = [
+  { name: 'run a half marathon', status: 'completed', detail: '3.24.2025 · philly love run' },
+  { name: 'run a full marathon', status: 'scheduled', detail: '11.1.2026 · nyc marathon' },
+  { name: 'produce techno', status: 'progress' },
+  { name: 'read everything stripe press recommends', status: 'progress' },
+  { name: 'make an mmorpg', status: 'open' },
+  { name: 'publish short stories', status: 'open' },
+  { name: 'make an animated series', status: 'open' },
+  { name: '3d print figurines', status: 'open' }
+];
+
+const SECTIONS = {
+  about:    { title: 'about', desc: 'center of it all' },
+  writing:  { title: 'writing', desc: "rabbit holes i've gone down" },
+  building: { title: 'building', desc: 'small things, taken apart' },
+  quests:   { title: 'side quests', desc: 'do we have quests in common?' }
 };
 
-const SIDE_QUESTS = [
-  {name:'run a half marathon',      status:'completed', detail:'3.24.2025 · philly love run'},
-  {name:'run a full marathon',      status:'scheduled', detail:'11.1.2026 · nyc marathon'},
-  {name:'produce techno',           status:'progress',  detail:''},
-  {name:'read everything stripe press recommends', status:'progress', detail:''},
-  {name:'make a mmorpg game',       status:'open',      detail:''},
-  {name:'publish short stories',    status:'open',      detail:''},
-  {name:'make animated series',     status:'open',      detail:''},
-  {name:'3d print figurines',       status:'open',      detail:''}
-];
+/* ───────────── RENDERERS (shared by panel + list) ───────────── */
 
-// Stars
-const starContainer = document.getElementById('stars');
-for (let i=0;i<200;i++){
-  const s=document.createElement('div'); s.className='star';
-  const sz=Math.random()<0.12?2:1;
-  s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*6}s;--op:${0.22+Math.random()*0.5};`;
-  starContainer.appendChild(s);
-}
+const dot = c => `<div class="dot" style="background:${c}18;border:1px solid ${c}40"><i style="background:${c};box-shadow:0 0 8px 2px ${c}55"></i></div>`;
 
-// Orbit rings
-const canvas = document.getElementById('solar-system-scaler');
-PLANETS.forEach(p=>{
-  const ring=document.createElement('div'); ring.className='orbit-ring';
-  const d=p.orbitRadius*2;
-  ring.style.width=d+'px'; ring.style.height=(d*TILT)+'px';
-  canvas.appendChild(ring);
-});
-
-// Build planet elements
-const planetEls=[];
-function buildDot(p, isClickable){
-  const orbit=document.createElement('div');
-  orbit.className='planet-orbit'; orbit.id=`orbit-${p.id}`;
-  const dot=document.createElement('div');
-  dot.className='planet-dot'; dot.id=`dot-${p.id}`;
-  if(p.filled){
-    dot.style.cssText=`width:${p.size}px;height:${p.size}px;background:${p.color};box-shadow:0 0 ${p.size*1.8}px ${p.size*0.55}px ${p.color}50;transform:translate(-50%,-50%);left:0;top:0;position:absolute;`;
-  } else {
-    dot.style.cssText=`width:${p.size}px;height:${p.size}px;background:transparent;border:1.5px solid ${p.color}80;transform:translate(-50%,-50%);left:0;top:0;position:absolute;`;
-  }
-  if(p.hasRing){
-    const rg=document.createElement('div');
-    rg.style.cssText=`position:absolute;top:50%;left:50%;width:${p.size*2.5}px;height:${p.size*0.45}px;border:1.5px solid ${p.color}50;border-radius:50%;transform:translate(-50%,-50%) rotateX(70deg);pointer-events:none;`;
-    dot.appendChild(rg);
-  }
-
-  if(p.filled && p.tooltipMain){
-    const tt=document.createElement('div'); tt.className='planet-tooltip';
-    const lineLen=38;
-    tt.style.left=(p.size/2+4)+'px';
-    tt.style.transform='translateY(-50%)';
-    tt.innerHTML=`
-      <div class="planet-tooltip-line" style="width:${lineLen}px;"></div>
-      <div style="padding-left:8px;">
-        <div class="planet-tooltip-text">${p.tooltipMain}</div>
-        <div class="planet-tooltip-sub">${p.tooltipSub||''}</div>
+function renderWriting() {
+  return `<div class="items">${WRITING.map(w => `
+    <article class="item">
+      ${dot(w.color)}
+      <div>
+        <div class="item-title">${w.title}</div>
+        <div class="item-meta">${w.date}</div>
+        <p class="item-blurb">${w.blurb}</p>
+        <div class="chips">${w.tags.map(t => `<span class="chip">${t}</span>`).join('')}</div>
+        <div class="actions"><a class="act" href="${w.link}" target="_blank" rel="noopener">read ↗</a></div>
       </div>
-    `;
-    dot.appendChild(tt);
-  } else {
-    const lbl=document.createElement('div'); lbl.className='planet-label';
-    lbl.textContent=p.label; lbl.style.left=(p.size/2+7)+'px';
-    dot.appendChild(lbl);
-  }
-
-  if(isClickable) dot.addEventListener('click',()=>openPlanet(p));
-  dot.addEventListener('mouseenter',()=>cursor.classList.add('big'));
-  dot.addEventListener('mouseleave',()=>cursor.classList.remove('big'));
-  orbit.appendChild(dot);
-  return {orbit,dot};
-}
-
-PLANETS.forEach(p=>{
-  const {orbit,dot}=buildDot(p,true);
-  canvas.appendChild(orbit);
-  planetEls.push({p,dot,angle:p.angle});
-});
-
-// Moon
-const moonWrapper=document.getElementById('moon-orbit-wrapper');
-const moonDot=document.createElement('div');
-moonDot.className='planet-dot'; moonDot.id='dot-moon';
-moonDot.style.cssText=`width:${MOON.size}px;height:${MOON.size}px;background:${MOON.color};box-shadow:0 0 ${MOON.size}px ${MOON.size*0.3}px ${MOON.color}cc;transform:translate(-50%,-50%);left:0;top:0;position:absolute;`;
-const moonTT=document.createElement('div'); moonTT.className='planet-tooltip';
-moonTT.style.left=(MOON.size/2+4)+'px'; moonTT.style.transform='translateY(-50%)';
-moonTT.innerHTML=`
-  <div class="planet-tooltip-line" style="width:32px;"></div>
-  <div style="padding-left:8px;">
-    <div class="planet-tooltip-text">${MOON.tooltipMain}</div>
-    <div class="planet-tooltip-sub">${MOON.tooltipSub}</div>
+    </article>`).join('')}
   </div>
-`;
-moonDot.appendChild(moonTT);
-moonDot.addEventListener('click',()=>openPlanet(MOON));
-moonDot.addEventListener('mouseenter',()=>cursor.classList.add('big'));
-moonDot.addEventListener('mouseleave',()=>cursor.classList.remove('big'));
-moonWrapper.appendChild(moonDot);
-const moonState={angle:MOON.angle};
-
-// Animation
-function animate(){
-  planetEls.forEach(item=>{
-    item.angle+=item.p.speed*16;
-    const x=Math.cos(item.angle)*item.p.orbitRadius;
-    const y=Math.sin(item.angle)*item.p.orbitRadius*TILT;
-    item.dot.style.left=x+'px'; item.dot.style.top=y+'px';
-  });
-  // Moon tracks Earth
-  const earthEl=planetEls.find(e=>e.p.id==='earth');
-  if(earthEl){
-    moonState.angle+=MOON.speed*16;
-    const ex=parseFloat(earthEl.dot.style.left)||0;
-    const ey=parseFloat(earthEl.dot.style.top)||0;
-    const mx=Math.cos(moonState.angle)*MOON.orbitRadius;
-    const my=Math.sin(moonState.angle)*MOON.orbitRadius*TILT;
-    moonDot.style.left=(ex+mx)+'px';
-    moonDot.style.top=(ey+my)+'px';
-  }
-  requestAnimationFrame(animate);
+  <a class="act more" href="https://notshananigans.substack.com/archive" target="_blank" rel="noopener">everything on substack ↗</a>`;
 }
-animate();
 
-// Cursor
-const cursor=document.getElementById('cursor');
-document.addEventListener('mousemove',e=>{
-  cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px';
-});
-document.querySelectorAll('button,a,#sun').forEach(el=>{
-  el.addEventListener('mouseenter',()=>cursor.classList.add('big'));
-  el.addEventListener('mouseleave',()=>cursor.classList.remove('big'));
-});
-
-// Overlay
-function openPlanet(planet){
-  cursor.classList.add('hidden');
-  document.getElementById('exp-title').textContent=planet.sectionTitle;
-  document.getElementById('exp-desc').textContent=planet.sectionDesc;
-  const list=document.getElementById('project-list');
-  list.innerHTML='';
-
-  if(planet.type==='writing'){
-    const pl=document.createElement('div'); pl.className='project-list';
-    planet.projects.forEach(proj=>{
-      const item=document.createElement('div'); item.className='project-item';
-      item.innerHTML=`
-        <div class="proj-planet" style="background:${proj.color}15;border:1px solid ${proj.color}38;">
-          <div style="width:15px;height:15px;border-radius:50%;background:${proj.color};box-shadow:0 0 7px 2px ${proj.color}44;"></div>
+function renderBuilds() {
+  return `<div class="items">${BUILDS.map(b => `
+    <article class="item">
+      ${dot(b.color)}
+      <div>
+        <div class="item-title">${b.title}</div>
+        <p class="item-blurb">${b.short}</p>
+        <div class="chips">${b.stack.map(s => `<span class="chip">${s}</span>`).join('')}</div>
+        <div class="actions">
+          <a class="act" href="${b.link}" target="_blank" rel="noopener">try it ↗</a>
+          <button type="button" class="act" onclick="openDetail('${b.id}')">how i built it →</button>
         </div>
-        <div class="proj-info">
-          <div class="proj-title">${proj.title}</div>
-          <div class="proj-short">${proj.short}</div>
-          <div class="proj-stack">${proj.tags.map(t=>`<span class="stack-tag">${t}</span>`).join('')}</div>
-        </div>
-        <div class="proj-links">
-          <a href="${proj.link}" target="_blank" class="proj-link-btn">read ↗</a>
-        </div>
-      `;
-      pl.appendChild(item);
-    });
-    list.appendChild(pl);
-
-  } else if(planet.type==='empty'){
-    list.innerHTML=`<div style="font-family:var(--font-mono);font-size:10px;color:rgba(245,242,236,0.22);letter-spacing:0.15em;padding:52px 20px;text-align:center;">coming soon ✦</div>`;
-  } else if(planet.type==='quests'){
-    const ql=document.createElement('div'); ql.className='quest-list';
-    const statusLabel={completed:'completed ✓',scheduled:'scheduled',progress:'in progress',open:'—'};
-    SIDE_QUESTS.forEach(q=>{
-      const item=document.createElement('div'); item.className='quest-item';
-      item.innerHTML=`
-        <div class="quest-status ${q.status}">${statusLabel[q.status]}</div>
-        <div class="quest-name">${q.name}</div>
-        ${q.detail?`<div class="quest-detail">${q.detail}</div>`:''}
-      `;
-      ql.appendChild(item);
-    });
-    list.appendChild(ql);
-  } else if(planet.type==='projects'){
-    const pl=document.createElement('div'); pl.className='project-list';
-    planet.projects.forEach(proj=>{
-      const item=document.createElement('div'); item.className='project-item';
-      item.innerHTML=`
-        <div class="proj-planet" style="background:${proj.color}15;border:1px solid ${proj.color}38;">
-          <div style="width:15px;height:15px;border-radius:50%;background:${proj.color};box-shadow:0 0 7px 2px ${proj.color}44;"></div>
-        </div>
-        <div class="proj-info">
-          <div class="proj-title">${proj.title}</div>
-          <div class="proj-short">${proj.short}</div>
-          <div class="proj-stack">${proj.stack.map(s=>`<span class="stack-tag">${s}</span>`).join('')}</div>
-        </div>
-        <div class="proj-links">
-          ${proj.link!=='#'
-            ?`<a href="${proj.link}" target="_blank" class="proj-link-btn">link ↗</a>`
-            :`<span class="proj-link-btn" style="opacity:0.18;pointer-events:none;">link ↗</span>`}
-          <button class="proj-link-btn detail" onclick="openBlog('${proj.id}')">details →</button>
-        </div>
-      `;
-      pl.appendChild(item);
-    });
-    list.appendChild(pl);
-  }
-  document.getElementById('overlay').classList.add('active');
-}
-function closeOverlay(){ document.getElementById('overlay').classList.remove('active'); cursor.classList.remove('hidden'); }
-function closeOverlayBg(e){ if(e.target===document.getElementById('overlay')) closeOverlay(); }
-
-// Blog
-function openBlog(id){
-  const proj=PLANETS.flatMap(p=>p.projects).find(p=>p.id===id);
-  if(!proj) return;
-  const sections=[
-    {num:'01',title:'how it started',body:proj.blog.started},
-    {num:'02',title:'the goal',      body:proj.blog.goal},
-    {num:'03',title:'the process',   body:proj.blog.process},
-    {num:'04',title:'the result',    body:proj.blog.result},
-    {num:'05',title:'next steps',    body:proj.blog.next},
-  ];
-  document.getElementById('blog-inner').innerHTML=`
-    <button class="blog-back" onclick="closeBlog()">back to projects</button>
-    <div class="blog-eyebrow">${proj.blog.eyebrow} ✦ behind the scenes</div>
-    <div class="blog-title">${proj.title}</div>
-    <div class="blog-meta">
-      <span>${proj.short}</span>
-      ${proj.link!=='#'?`· <a href="${proj.link}" target="_blank">view project ↗</a>`:''}
-    </div>
-    ${sections.map((s,i)=>`
-      <div class="blog-section">
-        <div class="blog-section-num">${s.num} / 05</div>
-        <div class="blog-section-title">${s.title}</div>
-        <div class="blog-section-body">${s.body}</div>
       </div>
-      ${i<sections.length-1?'<hr class="blog-divider"/>':''}
-    `).join('')}
-    <div class="blog-stack-section">
-      <div class="blog-stack-title">tools used</div>
-      <div class="blog-stack-tags">${proj.stack.map(s=>`<span class="blog-stack-tag">${s}</span>`).join('')}</div>
-    </div>
-  `;
-  document.getElementById('blog-page').classList.add('open');
+    </article>`).join('')}
+  </div>`;
 }
-function closeBlog(){ document.getElementById('blog-page').classList.remove('open'); }
 
-// About
-function openAbout(){ cursor.classList.add('hidden'); document.getElementById('about-panel').classList.add('active'); }
-function closeAbout(){ document.getElementById('about-panel').classList.remove('active'); cursor.classList.remove('hidden'); }
-function closeAboutBg(e){ if(e.target===document.getElementById('about-panel')) closeAbout(); }
+function renderQuests() {
+  const label = { completed: 'done ✓', scheduled: 'scheduled', progress: 'in progress', open: 'someday' };
+  return `<div class="items">${QUESTS.map(q => `
+    <div class="quest">
+      <span class="q-status ${q.status}">${label[q.status]}</span>
+      <span class="q-name">${q.name}${q.detail ? `<span class="q-detail">${q.detail}</span>` : ''}</span>
+    </div>`).join('')}
+  </div>`;
+}
 
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){ closeBlog(); closeOverlay(); closeAbout(); }
+const RENDER = {
+  about: () => `<div class="about-text">${ABOUT}</div>`,
+  writing: renderWriting,
+  building: renderBuilds,
+  quests: renderQuests
+};
+
+/* ───────────── LIST VIEW ───────────── */
+
+document.getElementById('list-wrap').innerHTML = ['writing', 'building', 'quests', 'about'].map(k => `
+  <section class="sec" id="sec-${k}">
+    <div class="sec-head"><h2 class="sec-title">${SECTIONS[k].title}</h2><span class="sec-desc">${SECTIONS[k].desc}</span></div>
+    ${RENDER[k]()}
+  </section>`).join('');
+
+/* ───────────── ORBIT VIEW ───────────── */
+
+const TILT = 0.36;
+const SUN = { id: 'sun', key: 'about', size: 116 };
+const PLANETS = [
+  { id: 'writing',  key: 'writing',  color: '#6aafcf', size: 78, r: 200, speed: 0.10, angle: 0.6 },
+  { id: 'building', key: 'building', color: '#e0a86e', size: 64, r: 300, speed: 0.065, angle: 3.3 },
+  { id: 'quests',   key: 'quests',   color: '#d4795a', size: 50, r: 392, speed: 0.045, angle: 2.0 }
+];
+const MOON = { color: '#eef2f5', size: 13, r: 64, speed: 0.4, angle: 1.2 }; // decorative, orbits writing
+
+const system = document.getElementById('system');
+const stage = document.getElementById('stage');
+const glow = document.createElement('div'); glow.id = 'sun-glow'; system.appendChild(glow);
+
+function makeBody(p, isSun) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'body-btn';
+  if (isSun) b.id = 'sun';
+  b.setAttribute('aria-label', `open ${SECTIONS[p.key].title}`);
+  const orb = document.createElement('div');
+  orb.className = 'orb';
+  if (!isSun) orb.style.cssText = `background:radial-gradient(circle at 35% 35%, ${p.color}, ${p.color}cc 60%, ${p.color}88);box-shadow:0 0 40px 8px ${p.color}40;`;
+  b.appendChild(orb);
+  b.addEventListener('click', () => openPanel(p.key));
+  system.appendChild(b);
+  // labels live in their own top layer so the sun and moon never cover them
+  const tag = document.createElement('div');
+  tag.className = 'tag';
+  tag.textContent = SECTIONS[p.key].title;
+  b._tag = tag;
+  return b;
+}
+
+const rings = PLANETS.map(() => { const r = document.createElement('div'); r.className = 'ring'; system.appendChild(r); return r; });
+const sunEl = makeBody(SUN, true);
+const planetEls = PLANETS.map(p => ({ p, el: makeBody(p, false), a: p.angle }));
+const moonEl = document.createElement('div');
+moonEl.style.cssText = `position:absolute;border-radius:50%;background:${MOON.color};box-shadow:0 0 10px 2px ${MOON.color}aa;transform:translate(-50%,-50%);pointer-events:none;z-index:6`;
+system.appendChild(moonEl);
+[sunEl, ...planetEls.map(x => x.el)].forEach(el => system.appendChild(el._tag));
+let moonA = MOON.angle;
+
+let geo = { cx: 0, cy: 0, s: 1, portrait: false };
+function layout() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  const portrait = h > w * 1.05;
+  const maxR = PLANETS[PLANETS.length - 1].r;
+  const big = Math.max(...PLANETS.map(p => p.size));
+  const labelPad = 40;
+  // half-extents of the system at scale 1
+  const halfW = portrait ? maxR * TILT + big / 2 + 70 : maxR + big / 2 + 40;
+  const halfH = portrait ? maxR + big / 2 + labelPad : maxR * TILT + big / 2 + labelPad;
+  const s = Math.min((w / 2 - 8) / halfW, (h / 2 - 8) / halfH, 1.2);
+  let cy = h / 2;
+  // desktop: the header overlays the top-left, nudge the system down a touch
+  if (!portrait && window.innerWidth >= 900) cy = Math.max(h / 2, 300);
+  geo = { cx: w / 2, cy, s, portrait };
+
+  PLANETS.forEach((p, i) => {
+    const a = p.r * 2 * s, b = p.r * 2 * TILT * s;
+    rings[i].style.width = (portrait ? b : a) + 'px';
+    rings[i].style.height = (portrait ? a : b) + 'px';
+    rings[i].style.left = geo.cx + 'px';
+    rings[i].style.top = geo.cy + 'px';
+  });
+  const sz = v => Math.max(v * s, v * 0.5);
+  const sunPx = sz(SUN.size) * (portrait ? 0.8 : 1);
+  sunEl.style.width = sunEl.style.height = sunPx + 'px';
+  sunEl.style.left = geo.cx + 'px';
+  sunEl.style.top = geo.cy + 'px';
+  sunEl._tag.style.left = geo.cx + 'px';
+  sunEl._tag.style.top = geo.cy + sunPx / 2 + 8 + 'px';
+  glow.style.width = glow.style.height = sunPx * 3.4 + 'px';
+  glow.style.left = geo.cx + 'px';
+  glow.style.top = geo.cy + 'px';
+  planetEls.forEach(item => { item.px = sz(item.p.size); item.el.style.width = item.el.style.height = item.px + 'px'; });
+  moonEl.style.width = moonEl.style.height = Math.max(MOON.size * s, 8) + 'px';
+}
+
+function pos(r, a) {
+  const { s, portrait } = geo;
+  return portrait
+    ? { x: Math.cos(a) * r * TILT * s, y: Math.sin(a) * r * s }
+    : { x: Math.cos(a) * r * s, y: Math.sin(a) * r * TILT * s };
+}
+
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let last = performance.now();
+function tick(now) {
+  const dt = Math.min((now - last) / 1000, 0.05); last = now;
+  const k = reduceMotion ? 0 : 1;
+  planetEls.forEach(item => {
+    item.a += item.p.speed * dt * k;
+    const { x, y } = pos(item.p.r, item.a);
+    item.el.style.left = geo.cx + x + 'px';
+    item.el.style.top = geo.cy + y + 'px';
+    item.el._tag.style.left = geo.cx + x + 'px';
+    item.el._tag.style.top = geo.cy + y + (item.px || 0) / 2 + 6 + 'px';
+    // planets behind the sun sit under it
+    item.el.style.zIndex = Math.sin(item.a) < 0 ? 4 : 11;
+  });
+  moonA += MOON.speed * dt * k;
+  const host = planetEls[0];
+  const hp = pos(host.p.r, host.a), mp = pos(MOON.r, moonA);
+  moonEl.style.left = geo.cx + hp.x + mp.x + 'px';
+  moonEl.style.top = geo.cy + hp.y + mp.y + 'px';
+  requestAnimationFrame(tick);
+}
+
+/* ───────────── VIEW TOGGLE ───────────── */
+
+function setView(v, save = true) {
+  document.body.className = v;
+  document.querySelectorAll('.toggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+  if (save) {
+    try { localStorage.setItem('shanz-view', v); } catch (e) {}
+    history.replaceState(null, '', v === 'list' ? '#list' : location.pathname);
+  }
+  if (v === 'orbit') requestAnimationFrame(layout);
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.toggle button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+let initial = 'orbit';
+try { initial = localStorage.getItem('shanz-view') || 'orbit'; } catch (e) {}
+if (location.hash === '#list') initial = 'list';
+setView(initial, false);
+layout();
+requestAnimationFrame(tick);
+window.addEventListener('resize', layout);
+
+/* ───────────── PANEL + DETAIL ───────────── */
+
+const panel = document.getElementById('panel');
+function openPanel(key) {
+  document.getElementById('panel-title').textContent = SECTIONS[key].title;
+  document.getElementById('panel-desc').textContent = SECTIONS[key].desc;
+  document.getElementById('panel-body').innerHTML = RENDER[key]();
+  document.getElementById('panel-inner').scrollTop = 0;
+  panel.classList.add('active');
+  bindCursor(panel);
+}
+function closePanel() { panel.classList.remove('active'); }
+panel.addEventListener('click', e => { if (e.target === panel) closePanel(); });
+
+const detail = document.getElementById('detail');
+function openDetail(id) {
+  const b = BUILDS.find(x => x.id === id);
+  if (!b) return;
+  const n = BUILDS.indexOf(b) + 1;
+  const secs = [
+    ['how it started', b.sections.started],
+    ['the goal', b.sections.goal],
+    ['the process', b.sections.process],
+    ['the result', b.sections.result],
+    ['next steps', b.sections.next]
+  ];
+  document.getElementById('detail-inner').innerHTML = `
+    <button type="button" class="back" onclick="closeDetail()">← back</button>
+    <div class="d-eyebrow">build 0${n} ✦ behind the scenes</div>
+    <h2 class="d-title">${b.title}</h2>
+    <div class="d-meta">${b.short}<br/><a href="${b.link}" target="_blank" rel="noopener">try it ↗</a></div>
+    ${secs.map(([h, body], i) => `
+      <section class="d-sec">
+        <div class="d-num">0${i + 1} / 05</div>
+        <h3 class="d-h">${h}</h3>
+        <div class="d-body">${body}</div>
+      </section>`).join('')}
+    <div class="d-stack"><div class="d-num">tools used</div><div class="chips">${b.stack.map(s => `<span class="chip">${s}</span>`).join('')}</div></div>
+  `;
+  detail.scrollTop = 0;
+  detail.classList.add('open');
+  bindCursor(detail);
+}
+function closeDetail() { detail.classList.remove('open'); }
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (detail.classList.contains('open')) closeDetail(); else closePanel();
 });
+
+/* ───────────── STARS + CURSOR ───────────── */
+
+const stars = document.getElementById('stars');
+for (let i = 0; i < 180; i++) {
+  const s = document.createElement('div'); s.className = 'star';
+  const sz = Math.random() < 0.12 ? 2 : 1;
+  s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random() * 100}%;top:${Math.random() * 100}%;--d:${2 + Math.random() * 4}s;--delay:${Math.random() * 6}s;--op:${0.2 + Math.random() * 0.5};`;
+  stars.appendChild(s);
+}
+
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+function bindCursor(root) {
+  root.querySelectorAll('button, a').forEach(el => {
+    if (el.dataset.cur) return; el.dataset.cur = 1;
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+}
+bindCursor(document);
 </script>
 </body>
 </html>
