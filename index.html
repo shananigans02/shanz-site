@@ -274,7 +274,7 @@
     position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center;
     background: transparent; pointer-events: none; transition: background .4s; padding: 16px;
   }
-  #panel.active { background: var(--scrim); pointer-events: all; }
+  #panel.active { background: var(--bg); pointer-events: all; }
   #panel-inner {
     width: min(680px, 100%); max-height: 86dvh; overflow-y: auto; overscroll-behavior: contain;
     opacity: 0; transform: translateY(10px); transition: opacity .35s, transform .35s ease;
@@ -370,10 +370,11 @@
 /* ───────────── CONTENT ───────────── */
 
 const ABOUT = `
-  <p>i'm a consultant in nyc. most days i sit between the people who want an ai product and the engineers building it, and try to get it from a deck to something people use. before that, i did diligence and integration work on tech deals.</p>
-  <p>after hours, i write long breakdowns of ai applications on <a href="https://substack.com/@notshananigans" target="_blank" rel="noopener">substack</a>: who buys them, why, and what has to be true for them to work. i also vibecode, mostly by forking open-source projects and pulling them apart until i understand them.</p>
+  <p>i'm a consultant in new york. most days i sit between the people who want an ai product and the engineers building it: getting everyone to agree on what we're making, then getting it from a deck to something people actually use. before that, i did diligence and integration work on tech deals.</p>
+  <p>after hours, i write long breakdowns of ai applications on <a href="https://substack.com/@notshananigans" target="_blank" rel="noopener">substack</a>: who buys them, why, and what has to be true for them to work. i also vibecode, mostly by finding open-source projects i like and pulling them apart until i understand them.</p>
   <p>in between, i'm taking damage at barry's or overinterpreting art.</p>
-  <p>please reach me on <a href="https://x.com/notshananigans" target="_blank" rel="noopener">x</a>, where ai projects, art and miscellany are very much solicited</p>
+  <p>i'm drawn to people who are serious about craft and unserious about themselves.</p>
+  <p>please reach me on <a href="https://x.com/notshananigans" target="_blank" rel="noopener">x</a>, where ai projects, art and miscellany are very much solicited.</p>
 `;
 
 const WRITING = [
@@ -405,28 +406,25 @@ const BUILDS = [
     link: 'https://get-in-da-booth.netlify.app/',
     color: '#e8a8c7',
     stack: ['face-api.js', 'mediapipe hands', 'claude', 'netlify'],
-    sections: {
-      started: `as always, it started with an x post. it was figmathon season, and i came across ${LINK('https://x.com/lalizlabeth/status/1966002793371619353?s=46', "@lalizlabeth")}'s #figmamakeathon submission where you can meow with your hands. catgirl allegations aside, it's super cute. it also reminded me of ${LINK('https://x.com/immike_wing/status/2009057802400969150?s=46', "@immike_wing")}'s arc'teryx beanie detector, which is pretty funny. both got me thinking about what image detection can actually do in the browser, and how approachable it's gotten.`,
-      goal: `a simple photobooth with sounds. i had just come off a tiktok and megan thee stallion bender, so they made it into the audio.`,
-      process: `there are two components: detection and sounds.<br/><br/><b>detection:</b> the app runs three neural network models entirely in the browser with face-api.js. one finds your face, one maps 68 landmark points across it (corners of your mouth, tip of your nose, jaw outline), and one classifies your expression into one of 7 emotions. gestures are computed from those coordinates directly. duck face checks whether your mouth is unusually narrow relative to your face.<br/><br/><b>sounds:</b> short clips, triggered on detection, with cooldown timers so they don't spam.<br/><br/>claude pretty much one-shotted the working prototype. there was some back and forth on thresholds and cooldowns, but it came together fast. two problems didn't have an easy fix:<br/><br/>i was quite excited about megan's ah. the landmark model has no tongue keypoint, only "mouth very extremely open," which fires on fah and ah pretty interchangeably. hand gestures (finger gun, heart) are also unreliable. the lite model running in-browser silently skips frames depending on lighting, hand angle and distance. i cut both for now. a vision api call to check for tongue specifically felt like overkill for a silly project.`,
-      result: `issues aside, it can do some stuff:<br/><ul><li>live emotion detection with color washes. happy goes warm yellow, surprised triggers a flash and zoom</li><li>fah / ah when your mouth opens</li></ul><br/>the part i found most interesting: no server, no backend, no api calls. models load from a cdn in a few seconds and everything runs on your device.`,
-      next: `<ul><li>snapchat-style filters. i grew up on those, so face-tracked overlays (dog ears, talking orange) will be fun to recreate</li><li>real tongue detection, either a model with tongue keypoints or a lightweight vision api call</li><li>hand gestures that work. finger gun and korean heart are in the code, they just don't fire reliably. worth testing whether a heavier model or better calibration fixes it</li></ul>`
-    }
+    sections: [
+      ['how it started', `as always, it started with an x post. it was figmathon season, and i came across ${LINK('https://x.com/lalizlabeth/status/1966002793371619353?s=46', "@lalizlabeth")}'s #figmamakeathon submission where you can meow with your hands. catgirl allegations aside, it's super cute. it also reminded me of ${LINK('https://x.com/immike_wing/status/2009057802400969150?s=46', "@immike_wing")}'s arc'teryx beanie detector, which is pretty funny. both got me thinking about what image detection can actually do in the browser, and how approachable it's gotten.`],
+      ['the goal', `a simple photobooth with sounds. i had just come off a tiktok and megan thee stallion bender, so they made it into the audio.`],
+      ['the process', `there are two components: detection and sounds.<br/><br/><b>detection:</b> the app runs three neural network models entirely in the browser with face-api.js. one finds your face, one maps 68 landmark points across it (corners of your mouth, tip of your nose, jaw outline), and one classifies your expression into one of 7 emotions. gestures are computed from those coordinates directly. duck face checks whether your mouth is unusually narrow relative to your face.<br/><br/><b>sounds:</b> short clips, triggered on detection, with cooldown timers so they don't spam.<br/><br/>claude pretty much one-shotted the working prototype. there was some back and forth on thresholds and cooldowns, but it came together fast. two problems didn't have an easy fix:<br/><br/>i was quite excited about megan's ah. the landmark model has no tongue keypoint, only "mouth very extremely open," which fires on fah and ah pretty interchangeably. hand gestures (finger gun, heart) are also unreliable. the lite model running in-browser silently skips frames depending on lighting, hand angle and distance. i cut both for now. a vision api call to check for tongue specifically felt like overkill for a silly project.`],
+      ['the result', `issues aside, it can do some stuff:<br/><ul><li>live emotion detection with color washes. happy goes warm yellow, surprised triggers a flash and zoom</li><li>fah / ah when your mouth opens</li></ul><br/>the part i found most interesting: no server, no backend, no api calls. models load from a cdn in a few seconds and everything runs on your device.`],
+      ['next steps', `<ul><li>snapchat-style filters. i grew up on those, so face-tracked overlays (dog ears, talking orange) will be fun to recreate</li><li>real tongue detection, either a model with tongue keypoints or a lightweight vision api call</li><li>hand gestures that work. finger gun and korean heart are in the code, they just don't fire reliably. worth testing whether a heavier model or better calibration fixes it</li></ul>`]
+    ]
   },
   {
     id: 'shoyo',
-    title: 'shoyo, but infinite',
-    short: 'an open-source infinite canvas, forked and refilled with ai-generated hinata figurines.',
+    title: 'day in a life',
+    short: 'my favorite anime character, turned into tiny figurines doing everyday things, on a canvas you can wander forever.',
     link: 'https://just-shoyo-activities-v2.vercel.app/',
     color: '#f0a050',
     stack: ['react', 'three.js / r3f', 'vite', 'tailwind', 'chatgpt images', 'vercel'],
-    sections: {
-      started: `${LINK('https://x.com/phatggg', '@phatggg')} built ${LINK('https://www.yyyyaaa.com/', 'yyyyaaa.com')}: an endless white void full of tiny dioramas of the same guy doing strange office tasks. very severance. then he ${LINK('https://github.com/yyyyaaa/yyyyaaa-2026', 'open-sourced it')}. i wanted to know if i could keep the engine and swap everything on top of it.`,
-      goal: `same infinite canvas, different universe: hinata shoyo from haikyuu, in figurine form, doing small ordinary things forever. something you wander through more than read.`,
-      process: `two parts: the engine and the images.<br/><br/><b>engine:</b> the canvas is react three fiber. the world is split into chunks, and only chunks near the camera render. images lazy-load, fade with depth, and you can drag, scroll, pinch or use wasd. i mostly left the engine alone and learned it by reading it. my changes sat on top: the image manifest, the overlay (logo, a "fan request" button that opens a pre-filled post to me on x, an fyi panel crediting the original), and seo.<br/><br/><b>images:</b> 14 figurine dioramas generated in chatgpt from one long prompt. the hard part was consistency. early outputs drifted chibi or landed on blocky, lego-looking bases, so the prompt grew a negative section that bans both. the full prompt is in the fyi panel on the site if you want to make your own.`,
-      result: `an infinite gallery of hinata spiking, sleeping, feeding crows, carrying groceries, eating ramen and texting kageyama. it works on phones with touch. the engine held up fine with a completely different set of images, which was the real test of the fork.`,
-      next: `<ul><li>fulfill fan requests as they come in</li><li>more poses, so the canvas repeats less as you wander</li></ul>`
-    }
+    sections: [
+      ['how it started', `when the new image models came out, my feed filled up with people turning their selfies into collectible figurines of themselves. i was rewatching haikyuu at the time, and i love the moments in an anime that have nothing to do with the plot, so i made my own version with the beloved hinata shoyo, living his daily life outside his volleyball arc.`],
+      ['how i built it', `i tried nano banana pro first, but it couldn't hold one style across 4–5 images, so i switched to chatgpt's image models. the endless canvas came from ${LINK('https://x.com/phatggg', 'a product engineer')}'s ${LINK('https://www.yyyyaaa.com/', 'website')} i stumbled on and loved. claude struggled to recreate it, so i begged him to open-source it, and he kindly did. i forked it, swapped in my images, and made some small tweaks.`]
+    ]
   }
 ];
 
@@ -701,13 +699,7 @@ function openDetail(id) {
   const b = BUILDS.find(x => x.id === id);
   if (!b) return;
   const n = BUILDS.indexOf(b) + 1;
-  const secs = [
-    ['how it started', b.sections.started],
-    ['the goal', b.sections.goal],
-    ['the process', b.sections.process],
-    ['the result', b.sections.result],
-    ['next steps', b.sections.next]
-  ];
+  const secs = b.sections;
   document.getElementById('detail-inner').innerHTML = `
     <button type="button" class="back" onclick="closeDetail()">← back</button>
     <div class="d-eyebrow">build 0${n} ✦ behind the scenes</div>
@@ -715,7 +707,7 @@ function openDetail(id) {
     <div class="d-meta">${b.short}<br/><a href="${b.link}" target="_blank" rel="noopener">try it ↗</a></div>
     ${secs.map(([h, body], i) => `
       <section class="d-sec">
-        <div class="d-num">0${i + 1} / 05</div>
+        <div class="d-num">0${i + 1} / 0${secs.length}</div>
         <h3 class="d-h">${h}</h3>
         <div class="d-body">${body}</div>
       </section>`).join('')}
