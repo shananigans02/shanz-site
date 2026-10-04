@@ -38,7 +38,7 @@
     --scrim: rgba(0,0,0,.96);
     --sun-glow: rgba(254,220,60,.30); --sun-glow2: rgba(254,220,60,.12);
     --night: .32; --earth-glow: rgba(170,215,235,.22); --mars-glow: rgba(240,160,130,.18); --saturn-glow: rgba(240,220,170,.16);
-    --moon-glow: rgba(255,255,255,.55); --ring-a: rgba(236,222,186,.35); --ring-b: rgba(242,230,198,.75);
+    --moon-glow: rgba(255,255,255,.55); --ring-a: rgba(236,222,186,.14); --ring-b: rgba(242,230,198,.38);
     --writing-hi: #9fd0e6; --writing: #6aafcf; --writing-lo: #3f7f9e; --writing-glow: rgba(106,175,207,.28);
     --building-hi: #f2c697; --building: #e0a86e; --building-lo: #a8763f; --building-glow: rgba(224,168,110,.26);
     --quests-hi: #eb9c80; --quests: #d4795a; --quests-lo: #9c4f36; --quests-glow: rgba(212,121,90,.26);
@@ -58,7 +58,7 @@
     --scrim: rgba(247,244,233,.97);
     --sun-glow: rgba(238,180,60,.34); --sun-glow2: rgba(238,180,60,.12);
     --night: .22; --earth-glow: rgba(120,170,200,.2); --mars-glow: rgba(210,130,100,.16); --saturn-glow: rgba(200,170,110,.16);
-    --moon-glow: rgba(255,255,255,.7); --ring-a: rgba(196,170,120,.35); --ring-b: rgba(190,160,105,.7);
+    --moon-glow: rgba(255,255,255,.7); --ring-a: rgba(196,170,120,.14); --ring-b: rgba(190,160,105,.36);
     --writing-hi: #a9cbdb; --writing: #7fa9bf; --writing-lo: #567f95; --writing-glow: rgba(127,169,191,.22);
     --building-hi: #ecc9a3; --building: #d6a676; --building-lo: #a77a4b; --building-glow: rgba(214,166,118,.22);
     --quests-hi: #e2a58d; --quests: #c97f63; --quests-lo: #95543e; --quests-glow: rgba(201,127,99,.2);
@@ -108,14 +108,17 @@
   }
   #nav a { text-decoration: none; transition: color .2s; }
   #nav a:hover { color: var(--ink); }
-  .icons { display: inline-flex; align-items: center; gap: 2px; margin-left: 2px; }
-  .ico { width: 34px; height: 34px; display: inline-grid; place-items: center; color: var(--muted);
-    border-radius: 50%; transition: color .2s, transform .35s ease; }
-  .ico:hover { color: var(--ink); }
-  .ico svg { width: 19px; height: 19px; grid-area: 1 / 1; transition: opacity .3s, transform .45s ease; }
-  /* each toggle shows its current state; a tap swaps the glyph */
-  body.orbit .g-list, body.list .g-orbit { opacity: 0; transform: rotate(-60deg) scale(.6); }
-  :root[data-theme="dark"] .g-sun, :root[data-theme="light"] .g-moon { opacity: 0; transform: rotate(60deg) scale(.6); }
+  .icons { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; }
+  .ico { position: relative; width: 32px; height: 32px; display: inline-grid; place-items: center; color: var(--muted); transition: color .2s; }
+  .ico:hover, .ico:focus-visible { color: var(--ink); }
+  .ico svg { width: 20px; height: 20px; grid-area: 1 / 1; transition: opacity .35s ease, transform .5s ease; }
+  /* the view toggle shows where it takes you: lines (list) from the planets, a planet from the list */
+  body.orbit .g-orbit, body.list .g-list { opacity: 0; transform: scale(.7); }
+  /* the theme toggle is a half-filled circle that turns over */
+  :root[data-theme="light"] .g-theme { transform: rotate(180deg); }
+  .tip { position: absolute; top: 100%; left: 50%; transform: translate(-50%, 2px); white-space: nowrap;
+    font-style: italic; font-size: 15px; color: var(--muted); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; }
+  .ico:hover .tip, .ico:focus-visible .tip { opacity: 1; transform: translate(-50%, 4px); }
 
   /* ── INTRO ── */
   #top { position: relative; z-index: 20; padding: calc(max(16px, env(safe-area-inset-top)) + 58px) 20px 4px; }
@@ -159,9 +162,9 @@
   .mars   { background: radial-gradient(circle at 35% 32%, #f3c3ad, #e0977a 52%, #b8705a); box-shadow: 0 0 24px 4px var(--mars-glow); }
   .saturn { background: radial-gradient(circle at 35% 30%, #f6e8c6, #e3cd9c 50%, #c2a26b); box-shadow: 0 0 34px 6px var(--saturn-glow); }
   .s-ring {
-    position: absolute; left: 50%; top: 50%; width: 236%; height: 62%; border-radius: 50%; pointer-events: none;
+    position: absolute; left: 50%; top: 50%; width: 205%; height: 50%; border-radius: 50%; pointer-events: none;
     transform: translate(-50%,-50%) rotate(-12deg);
-    background: radial-gradient(closest-side, transparent 0 60%, var(--ring-a) 63%, var(--ring-b) 72%, var(--ring-a) 82%, transparent 90%);
+    background: radial-gradient(closest-side, transparent 0 68%, var(--ring-a) 72%, var(--ring-b) 79%, var(--ring-a) 86%, transparent 91%);
   }
   .s-ring.back { z-index: 0; clip-path: inset(0 0 50% 0); }
   .s-ring.front { z-index: 2; clip-path: inset(50% 0 0 0); }
@@ -303,13 +306,14 @@
   <a href="https://substack.com/@notshananigans" target="_blank" rel="noopener">Substack</a>
   <a href="https://x.com/notshananigans" target="_blank" rel="noopener">X</a>
   <span class="icons">
-    <button type="button" class="ico" id="view-toggle" aria-label="switch to list view" title="list view">
-      <svg class="g-orbit" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1"><defs><clipPath id="ring-front"><rect x="0" y="10" width="20" height="10"/></clipPath></defs><g transform="rotate(-22 10 10)"><ellipse cx="10" cy="10" rx="8.6" ry="2.6"/><circle cx="10" cy="10" r="4.4" fill="var(--bg)"/><ellipse cx="10" cy="10" rx="8.6" ry="2.6" clip-path="url(#ring-front)"/></g></svg>
-      <svg class="g-list" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path d="M4 6.5h12M4 10h12M4 13.5h8"/></svg>
+    <button type="button" class="ico" id="view-toggle" aria-label="switch to list view">
+      <svg class="g-list" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M3.5 5.8h13" stroke-width="1.1"/><path d="M3.5 10h13" stroke-width=".85"/><path d="M3.5 14.2h8.5" stroke-width=".85"/></svg>
+      <svg class="g-orbit" viewBox="0 0 20 20" fill="none" stroke="currentColor"><g transform="rotate(-20 10 10)"><ellipse cx="10" cy="10" rx="8.8" ry="2.5" stroke-width=".75"/><circle cx="10" cy="10" r="5.1" fill="var(--bg)" stroke-width="1.1"/><path d="M1.2 10a8.8 2.5 0 0 0 17.6 0" stroke-width=".75"/></g></svg>
+      <span class="tip" id="view-tip">list</span>
     </button>
-    <button type="button" class="ico" id="theme-toggle" aria-label="switch theme" title="switch theme">
-      <svg class="g-moon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round"><path d="M12.6 3.4a6.9 6.9 0 1 0 4.2 9.9 5.6 5.6 0 0 1-4.2-9.9z"/></svg>
-      <svg class="g-sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1"><circle cx="10" cy="10" r="5.4"/><circle cx="10" cy="10" r="1.1" fill="currentColor" stroke="none"/></svg>
+    <button type="button" class="ico" id="theme-toggle" aria-label="switch theme">
+      <svg class="g-theme" viewBox="0 0 20 20" fill="none" stroke="currentColor"><circle cx="10" cy="10" r="5.9" stroke-width="1.05"/><path d="M10 4.1a5.9 5.9 0 0 0 0 11.8z" fill="currentColor" stroke="none"/></svg>
+      <span class="tip" id="theme-tip">light</span>
     </button>
   </span>
 </nav>
@@ -559,7 +563,7 @@ function layout() {
   // on squarer stages (phones), view the system more from above so it fills the space
   const T = portrait ? TILT : Math.min(0.62, Math.max(TILT, (h / w) * 0.62));
   const maxR = PLANETS[PLANETS.length - 1].r;
-  const big = Math.max(...PLANETS.map(p => p.ring ? p.size * 2.36 : p.size));
+  const big = Math.max(...PLANETS.map(p => p.ring ? p.size * 2.05 : p.size));
   const labelPad = 40;
   // half-extents of the system at scale 1
   const halfW = portrait ? maxR * T + big / 2 + 70 : maxR + big / 2 + 40;
@@ -648,7 +652,7 @@ function setView(v, save = true) {
   document.body.className = v;
   const vt = document.getElementById('view-toggle');
   vt.setAttribute('aria-label', v === 'orbit' ? 'switch to list view' : 'switch to orbit view');
-  vt.title = v === 'orbit' ? 'list view' : 'orbit view';
+  document.getElementById('view-tip').textContent = v === 'orbit' ? 'list' : 'orbit';
   if (save) {
     try { localStorage.setItem('shanz-view', v); } catch (e) {}
     history.replaceState(null, '', v === 'list' ? '#list' : location.pathname);
@@ -661,8 +665,8 @@ document.getElementById('view-toggle').addEventListener('click', () => setView(d
 /* ───────────── THEME ───────────── */
 function applyTheme(t, save) {
   document.documentElement.dataset.theme = t;
-  const tt = document.getElementById('theme-toggle');
-  if (tt) tt.title = t === 'light' ? 'dark mode' : 'light mode';
+  const tip = document.getElementById('theme-tip');
+  if (tip) tip.textContent = t === 'light' ? 'dark' : 'light';
   const m = document.querySelector('meta[name="theme-color"]');
   if (m) m.setAttribute('content', t === 'light' ? '#f7f4e9' : '#000000');
   if (save) { try { localStorage.setItem('shanz-theme', t); } catch (e) {} }
