@@ -130,6 +130,19 @@
     body.orbit #stage { position: fixed; inset: 0; }
     .name { font-size: 40px; }
   }
+  /* wide screens: intro becomes a left column, vertically centered; orbit takes the right */
+  @media (min-width: 1200px) and (min-height: 560px) {
+    body.orbit #top { top: 50%; left: clamp(48px, 5vw, 96px); transform: translateY(-50%); max-width: 520px; }
+    body.orbit .name { font-size: clamp(44px, 3.6vw, 60px); margin-bottom: 22px; }
+    body.orbit .intro { font-size: 16px; max-width: 500px; }
+    body.orbit .intro li + li { margin-top: 10px; }
+    body.orbit .top-row { margin-top: 28px; justify-content: flex-start; gap: 32px; }
+    body.orbit #hint { left: var(--hint-x, 50%); }
+  }
+  @media (min-width: 1700px) and (min-height: 560px) {
+    body.orbit .intro { font-size: 17px; max-width: 530px; }
+    body.orbit #top { max-width: 560px; }
+  }
 
   /* ── LIST VIEW ── */
   #list { display: none; position: relative; z-index: 1; }
@@ -480,10 +493,18 @@ function layout() {
   const halfW = portrait ? maxR * TILT + big / 2 + 70 : maxR + big / 2 + 40;
   const halfH = portrait ? maxR + big / 2 + labelPad : maxR * TILT + big / 2 + labelPad;
   let s = Math.min((w / 2 - 8) / halfW, (h / 2 - 8) / halfH, 1.2);
-  let cy = h / 2;
-  // desktop: the intro floats over the top-left; if the system would run into it,
-  // fit the system into the space below the intro instead
-  if (!portrait && window.innerWidth >= 900) {
+  let cy = h / 2, cx = w / 2;
+  const wide = !portrait && window.innerWidth >= 1200 && window.innerHeight >= 560;
+  if (wide) {
+    // intro is a left column: center the system in the space to its right
+    const hb = document.getElementById('top').getBoundingClientRect();
+    const left = hb.right + 48, regionW = w - left - 24;
+    s = Math.min(regionW / 2 / halfW, (h / 2 - 24) / halfH, 1.25);
+    cx = left + regionW / 2;
+    stage.style.setProperty('--hint-x', cx + 'px');
+  } else if (!portrait && window.innerWidth >= 900) {
+    // mid-size: the intro floats over the top-left; if the system would run into it,
+    // fit the system into the space below the intro instead
     const hb = document.getElementById('top').getBoundingClientRect();
     const overlaps = (cy - halfH * s) < hb.bottom + 12 && (w / 2 - halfW * s) < hb.right;
     if (overlaps) {
@@ -492,7 +513,7 @@ function layout() {
       cy = top + usable / 2;
     }
   }
-  geo = { cx: w / 2, cy, s, portrait };
+  geo = { cx, cy, s, portrait };
 
   PLANETS.forEach((p, i) => {
     const a = p.r * 2 * s, b = p.r * 2 * TILT * s;
@@ -566,6 +587,7 @@ setView(initial, false);
 layout();
 requestAnimationFrame(tick);
 window.addEventListener('resize', layout);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
 
 /* ───────────── PANEL + DETAIL ───────────── */
 
