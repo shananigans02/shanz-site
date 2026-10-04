@@ -222,11 +222,12 @@
   /* ── LIST VIEW ── */
   #list { display: none; position: relative; z-index: 1; }
   body.list #list { display: block; }
-  body.list #top, #list .wrap { max-width: 680px; margin: 0 auto; }
+  body.list #top { display: none; }
+  #list .wrap { max-width: 680px; margin: 0 auto; }
   body.list #top { padding-top: calc(max(16px, env(safe-area-inset-top)) + 84px); }
-  #list .wrap { padding: 8px 20px 96px; }
+  #list .wrap { padding: calc(max(16px, env(safe-area-inset-top)) + 64px) 20px 96px; }
   .sec { margin-top: 0; border-bottom: 1px solid var(--rule); }
-  #list .wrap > .sec:first-child { margin-top: 40px; border-top: 1px solid var(--rule); }
+  #list .wrap > .sec:first-child { margin-top: 0; border-top: 1px solid var(--rule); }
   .sec-head { display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: 14px 2px; cursor: pointer; list-style: none; }
   .sec-head::-webkit-details-marker { display: none; }
@@ -431,6 +432,7 @@ const BUILDS = [
 
 
 const SECTIONS = {
+  intro:      { title: 'intro', desc: '' },
   about:      { title: 'about', desc: '' },
   writing:    { title: 'writing', desc: '' },
   vibecoding: { title: 'vibecoding', desc: '' },
@@ -475,6 +477,7 @@ function renderBuilds() {
 }
 
 const RENDER = {
+  intro: () => `<div class="intro">${document.querySelector('#top .intro').innerHTML}</div>`,
   about: () => `<div class="about-text">${ABOUT}</div>`,
   writing: renderWriting,
   vibecoding: renderBuilds,
@@ -483,8 +486,8 @@ const RENDER = {
 
 /* ───────────── LIST VIEW ───────────── */
 
-document.getElementById('list-wrap').innerHTML = ['about', 'vibecoding', 'writing', 'art'].map(k => `
-  <details class="sec" id="sec-${k}">
+document.getElementById('list-wrap').innerHTML = ['intro', 'about', 'vibecoding', 'writing', 'art'].map(k => `
+  <details class="sec" id="sec-${k}"${k === 'intro' ? ' open' : ''}>
     <summary class="sec-head"><h2 class="sec-title">${SECTIONS[k].title}</h2><span class="sec-mark" aria-hidden="true"></span></summary>
     <div class="sec-body">${RENDER[k]()}</div>
   </details>`).join('');
