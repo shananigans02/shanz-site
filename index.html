@@ -4,10 +4,10 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <title>shanz</title>
-<meta name="description" content="hi! i go by shanz online. during the day, i work in consulting and take ai products from strategy to deployment. after hours, i vibe code and write about ai applications."/>
+<meta name="description" content="hi! i go by shanz online. during the day, i work in consulting and take ai products from strategy to deployment. after hours, i vibecode and write about ai applications."/>
 <meta property="og:type" content="website"/>
 <meta property="og:title" content="shanz"/>
-<meta property="og:description" content="hi! i go by shanz online. ai products from strategy to deployment, vibe coding, and writing about ai applications."/>
+<meta property="og:description" content="hi! i go by shanz online. ai products from strategy to deployment, vibecoding, and writing about ai applications."/>
 <meta property="og:image" content="https://shanz-site.vercel.app/og.png"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:site" content="@notshananigans"/>
@@ -83,16 +83,26 @@
   ::selection { background: var(--ink); color: var(--bg); }
   .label { font-variant: all-small-caps; letter-spacing: .08em; }
 
-  /* custom cursor only on real mice */
+  /* custom cursor (real mice only): a small glowing comet whose tail stretches with speed */
   #cursor { display: none; }
+  :root { --c-core: #fffbe8; --c-mid: #ffd98a; --c-glow: rgba(255,205,120,.55); --c-haze: rgba(255,190,90,.22); }
+  :root[data-theme="light"] { --c-core: #fff3cf; --c-mid: #f0b24a; --c-glow: rgba(236,165,55,.55); --c-haze: rgba(236,170,70,.22); }
   @media (hover: hover) and (pointer: fine) {
-    #cursor {
-      display: block; position: fixed; top: 0; left: 0; z-index: 9999;
-      width: 7px; height: 7px; background: var(--ink); border-radius: 50%;
-      pointer-events: none; transform: translate(-50%, -50%);
-      transition: width .2s, height .2s, opacity .2s; opacity: .8;
+    html, body, a, button, summary { cursor: none; }
+    #cursor { display: block; position: fixed; top: 0; left: 0; width: 0; height: 0; z-index: 9999; pointer-events: none; }
+    #cursor .head {
+      position: absolute; width: 9px; height: 9px; left: -4.5px; top: -4.5px; border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, var(--c-core), var(--c-mid) 70%);
+      box-shadow: 0 0 8px 3px var(--c-glow), 0 0 22px 9px var(--c-haze);
+      transition: transform .25s ease, box-shadow .25s ease;
     }
-    #cursor.big { width: 26px; height: 26px; opacity: .25; }
+    #cursor .tail {
+      position: absolute; left: 0; top: -3px; height: 6px; width: 0; border-radius: 3px;
+      transform-origin: 0 50%;
+      background: linear-gradient(90deg, var(--c-mid), var(--c-glow) 30%, var(--c-haze) 65%, transparent);
+      filter: blur(1.4px);
+    }
+    #cursor.big .head { transform: scale(1.7); box-shadow: 0 0 12px 5px var(--c-glow), 0 0 30px 12px var(--c-haze); }
   }
 
   /* stars */
@@ -218,10 +228,10 @@
   .sec { margin-top: 0; border-bottom: 1px solid var(--rule); }
   #list .wrap > .sec:first-child { margin-top: 40px; border-top: 1px solid var(--rule); }
   .sec-head { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 18px 2px; cursor: pointer; list-style: none; }
+    padding: 14px 2px; cursor: pointer; list-style: none; }
   .sec-head::-webkit-details-marker { display: none; }
-  .sec-title { font-weight: 400; font-size: 30px; line-height: 1.1; }
-  .sec-mark { position: relative; width: 14px; height: 14px; flex-shrink: 0; color: var(--muted); }
+  .sec-title { font-weight: 400; font-size: 1em; line-height: 1.4; }
+  .sec-mark { position: relative; width: 11px; height: 11px; flex-shrink: 0; color: var(--muted); }
   .sec-mark::before, .sec-mark::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: currentColor; transition: transform .3s ease; }
   .sec-mark::after { transform: rotate(90deg); }
   .sec[open] .sec-mark::after { transform: rotate(0deg); }
@@ -308,7 +318,7 @@
 </head>
 <body class="orbit">
 
-<div id="cursor"></div>
+<div id="cursor" aria-hidden="true"><span class="tail"></span><span class="head"></span></div>
 <div id="stars"></div>
 
 <nav id="nav" aria-label="links">
@@ -330,7 +340,7 @@
 <header id="top">
   <div class="intro">
     <p>during the day, i work in consulting and take ai products from strategy to deployment</p>
-    <p>after hours, i vibe code, pull apart open-source projects, and write about ai applications</p>
+    <p>after hours, i vibecode, pull apart open-source projects, and write about ai applications</p>
     <p>in between, i'm taking damage at barry's or overinterpreting art</p>
   </div>
 </header>
@@ -360,7 +370,7 @@
 
 const ABOUT = `
   <p>i'm a consultant in nyc. most days i sit between the people who want an ai product and the engineers building it, and try to get it from a deck to something people use. before that, i did diligence and integration work on tech deals.</p>
-  <p>after hours, i write long breakdowns of ai applications on <a href="https://substack.com/@notshananigans" target="_blank" rel="noopener">substack</a>: who buys them, why, and what has to be true for them to work. i also vibe code, mostly by forking open-source projects and pulling them apart until i understand them.</p>
+  <p>after hours, i write long breakdowns of ai applications on <a href="https://substack.com/@notshananigans" target="_blank" rel="noopener">substack</a>: who buys them, why, and what has to be true for them to work. i also vibecode, mostly by forking open-source projects and pulling them apart until i understand them.</p>
   <p>in between, i'm taking damage at barry's or overinterpreting art.</p>
   <p>please reach me on <a href="https://x.com/notshananigans" target="_blank" rel="noopener">x</a>, where ai projects, art and miscellany are very much solicited</p>
 `;
@@ -423,7 +433,7 @@ const BUILDS = [
 const SECTIONS = {
   about:      { title: 'about', desc: '' },
   writing:    { title: 'writing', desc: '' },
-  vibecoding: { title: 'vibe coding', desc: '' },
+  vibecoding: { title: 'vibecoding', desc: '' },
   art:        { title: 'art', desc: '' }
 };
 
@@ -730,7 +740,25 @@ for (let i = 0; i < 180; i++) {
 }
 
 const cursor = document.getElementById('cursor');
-document.addEventListener('mousemove', e => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
+const tail = cursor.querySelector('.tail');
+let cx = -100, cy = -100, vx = 0, vy = 0, lastMove = performance.now();
+document.addEventListener('mousemove', e => {
+  const now = performance.now(), dt = Math.max(8, now - lastMove);
+  // smoothed velocity in px per frame-ish
+  vx = vx * .7 + ((e.clientX - cx) / dt * 16) * .3;
+  vy = vy * .7 + ((e.clientY - cy) / dt * 16) * .3;
+  cx = e.clientX; cy = e.clientY; lastMove = now;
+  cursor.style.transform = `translate(${cx}px, ${cy}px)`;
+});
+(function comet() {
+  vx *= .93; vy *= .93; // the tail settles when the mouse rests
+  const speed = Math.hypot(vx, vy);
+  const len = Math.min(80, speed * 3.2);
+  tail.style.width = len + 'px';
+  tail.style.opacity = Math.min(1, speed / 6);
+  tail.style.transform = `rotate(${Math.atan2(-vy, -vx)}rad)`; // the tail points back along the path
+  requestAnimationFrame(comet);
+})();
 function bindCursor(root) {
   root.querySelectorAll('button, a').forEach(el => {
     if (el.dataset.cur) return; el.dataset.cur = 1;
