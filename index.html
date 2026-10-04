@@ -111,7 +111,7 @@
   .icons { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; }
   .ico { position: relative; width: 32px; height: 32px; display: inline-grid; place-items: center; color: var(--muted); transition: color .2s; }
   .ico:hover, .ico:focus-visible { color: var(--ink); }
-  .ico svg { width: 20px; height: 20px; grid-area: 1 / 1; transition: opacity .35s ease, transform .5s ease; }
+  .ico svg { width: 20px; height: 20px; overflow: visible; grid-area: 1 / 1; transition: opacity .35s ease, transform .5s ease; }
   /* the view toggle shows where it takes you: lines (list) from the planets, a planet from the list */
   body.orbit .g-orbit, body.list .g-list { opacity: 0; transform: scale(.7); }
   /* the theme toggle is a half-filled circle that turns over */
@@ -307,8 +307,8 @@
   <a href="https://x.com/notshananigans" target="_blank" rel="noopener">X</a>
   <span class="icons">
     <button type="button" class="ico" id="view-toggle" aria-label="switch to list view">
-      <svg class="g-list" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M3.5 5.8h13" stroke-width="1.1"/><path d="M3.5 10h13" stroke-width=".85"/><path d="M3.5 14.2h8.5" stroke-width=".85"/></svg>
-      <svg class="g-orbit" viewBox="0 0 20 20" fill="none" stroke="currentColor"><g transform="rotate(-20 10 10)"><ellipse cx="10" cy="10" rx="8.8" ry="2.5" stroke-width=".75"/><circle cx="10" cy="10" r="5.1" fill="var(--bg)" stroke-width="1.1"/><path d="M1.2 10a8.8 2.5 0 0 0 17.6 0" stroke-width=".75"/></g></svg>
+      <svg class="g-list" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1"><path d="M3.8 6h12.4M3.8 10h12.4M3.8 14h12.4"/></svg>
+      <svg class="g-orbit" viewBox="0 0 20 20" fill="none" stroke="currentColor"><g transform="rotate(-20 10 10)"><ellipse cx="10" cy="10" rx="9.7" ry="2.7" stroke-width=".8"/><circle cx="10" cy="10" r="5.9" fill="var(--bg)" stroke-width="1.05"/><path d="M.3 10a9.7 2.7 0 0 0 19.4 0" stroke-width=".8"/></g></svg>
       <span class="tip" id="view-tip">list</span>
     </button>
     <button type="button" class="ico" id="theme-toggle" aria-label="switch theme">
