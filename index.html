@@ -247,8 +247,8 @@
   .items { display: flex; flex-direction: column; }
   .item { display: grid; grid-template-columns: 30px 1fr; gap: 14px; padding: 20px 2px; border-bottom: 1px solid var(--rule); }
   .item:last-child { border-bottom: none; }
-  .dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; margin-top: 4px; }
-  .dot i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .dot { width: 30px; height: 30px; display: grid; place-items: center; margin-top: 4px; }
+  .dot i { width: 13px; height: 13px; border-radius: 50%; display: block; box-shadow: none; }
   .item-title { font-weight: 500; font-size: 21px; line-height: 1.3; }
   .item-meta { font-size: 15px; color: var(--muted); margin-top: 2px; }
   .item-blurb { font-size: 18px; line-height: 1.6; color: var(--muted); margin-top: 6px; }
@@ -383,16 +383,14 @@ const WRITING = [
     date: 'apr 2026',
     blurb: "how simile's ai agents work, where they fit into real customer research workflows, and a scorecard for which enterprise use cases to go after first.",
     tags: ['go-to-market', 'ai agents', 'enterprise software', 'customer research'],
-    link: 'https://notshananigans.substack.com/p/inside-simile-what-it-means-to-simulate',
-    color: '#E05A4E'
+    link: 'https://notshananigans.substack.com/p/inside-simile-what-it-means-to-simulate'
   },
   {
     title: 'the humans grading ai: on the contractor problem at the heart of frontier model training',
     date: 'apr 2026',
     blurb: 'scale, surge, mercor and the rest sell expert judgment to frontier labs. the hard part is getting consistent, elite work out of a contractor base that can leave whenever it wants.',
     tags: ['ai infrastructure', 'post-training', 'marketplaces', 'operations'],
-    link: 'https://notshananigans.substack.com/p/the-humans-grading-the-ai-on-the',
-    color: '#7ab8d4'
+    link: 'https://notshananigans.substack.com/p/the-humans-grading-the-ai-on-the'
   }
 ];
 
@@ -404,7 +402,6 @@ const BUILDS = [
     title: 'get in da (photo)booth',
     short: 'a browser photobooth that reacts to your face. three models, no server.',
     link: 'https://get-in-da-booth.netlify.app/',
-    color: '#e8a8c7',
     stack: ['face-api.js', 'mediapipe hands', 'claude', 'netlify'],
     sections: [
       ['how it started', `as always, it started with an x post. it was figmathon season, and i came across ${LINK('https://x.com/lalizlabeth/status/1966002793371619353?s=46', "@lalizlabeth")}'s #figmamakeathon submission where you can meow with your hands. catgirl allegations aside, it's super cute. it also reminded me of ${LINK('https://x.com/immike_wing/status/2009057802400969150?s=46', "@immike_wing")}'s arc'teryx beanie detector, which is pretty funny. both got me thinking about what image detection can actually do in the browser, and how approachable it's gotten.`],
@@ -419,7 +416,6 @@ const BUILDS = [
     title: 'day in a life',
     short: 'my favorite anime character, turned into tiny figurines doing everyday things, on a canvas you can wander forever.',
     link: 'https://just-shoyo-activities-v2.vercel.app/',
-    color: '#f0a050',
     stack: ['react', 'three.js / r3f', 'vite', 'tailwind', 'chatgpt images', 'vercel'],
     sections: [
       ['how it started', `when the new image models came out, my feed filled up with people turning their selfies into collectible figurines of themselves. i was rewatching haikyuu at the time, and i love the moments in an anime that have nothing to do with the plot, so i made my own version with the beloved hinata shoyo, living his daily life outside his volleyball arc.`],
@@ -439,12 +435,13 @@ const SECTIONS = {
 
 /* ───────────── RENDERERS (shared by panel + list) ───────────── */
 
-const dot = c => `<div class="dot" style="background:color-mix(in srgb, ${c} 12%, transparent);border:1px solid color-mix(in srgb, ${c} 35%, transparent)"><i style="background:${c}"></i></div>`;
+// each item carries a tiny version of the planet it lives on
+const dot = look => `<div class="dot" aria-hidden="true"><i class="${look}"></i></div>`;
 
 function renderWriting() {
   return `<div class="items">${WRITING.map(w => `
     <article class="item">
-      ${dot(w.color)}
+      ${dot('earth')}
       <div>
         <div class="item-title">${w.title}</div>
         <div class="item-meta">${w.date}</div>
@@ -460,7 +457,7 @@ function renderWriting() {
 function renderBuilds() {
   return `<div class="items">${BUILDS.map(b => `
     <article class="item">
-      ${dot(b.color)}
+      ${dot('mars')}
       <div>
         <div class="item-title">${b.title}</div>
         <p class="item-blurb">${b.short}</p>
