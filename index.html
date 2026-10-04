@@ -11,13 +11,13 @@
 <meta property="og:image" content="https://shanz-site.vercel.app/og.png"/>
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:site" content="@notshananigans"/>
-<meta name="theme-color" content="#000000"/>
+<meta name="theme-color" content="#f7f4e9"/>
 <script>
   // set the theme before first paint so there is no flash
   (function () {
     var t = null;
     try { t = localStorage.getItem('shanz-theme'); } catch (e) {}
-    if (t !== 'light' && t !== 'dark') t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    if (t !== 'light' && t !== 'dark') t = 'light'; // everyone starts in light mode
     document.documentElement.dataset.theme = t;
   })();
 </script>
@@ -104,12 +104,13 @@
   /* ── TOP NAV (links, view, lamp) ── */
   #nav {
     position: fixed; z-index: 60; top: max(16px, env(safe-area-inset-top)); right: 16px;
-    display: flex; align-items: center; gap: 18px; font-size: 17px; color: var(--muted);
+    display: flex; align-items: center; gap: 22px; font-size: 17px; color: var(--muted);
   }
   #nav a { text-decoration: none; transition: color .2s; }
   #nav a:hover { color: var(--ink); }
-  .icons { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; }
-  .ico { position: relative; width: 32px; height: 32px; display: inline-grid; place-items: center; color: var(--muted); transition: color .2s; }
+  .icons { display: inline-flex; align-items: center; gap: inherit; }
+  .ico { position: relative; width: 20px; height: 32px; display: inline-grid; place-items: center; color: var(--muted); transition: color .2s; }
+  .ico::after { content: ''; position: absolute; inset: -4px -10px; } /* comfortable tap area */
   .ico:hover, .ico:focus-visible { color: var(--ink); }
   .ico svg { width: 20px; height: 20px; overflow: visible; grid-area: 1 / 1; transition: opacity .35s ease, transform .5s ease; }
   /* the view toggle shows where it takes you: lines (list) from the planets, a planet from the list */
@@ -191,7 +192,8 @@
     white-space: nowrap; pointer-events: none; animation: fade-hint 9s ease forwards 2s;
   }
   @keyframes fade-hint { 0%,70%{opacity:1} 100%{opacity:0} }
-  @media (max-width: 600px) { .tag { font-size: 16px; } .ico { width: 30px; height: 30px; } #nav { gap: 14px; } }
+  @media (max-width: 600px) { .tag { font-size: 16px; } #nav { gap: 20px; } }
+  @media (hover: none) { .tip { display: none; } } /* no hover on phones, so no sticky hover word */
 
   @media (min-width: 900px) {
     #nav { right: 32px; top: 24px; }
@@ -213,11 +215,18 @@
   body.list #top, #list .wrap { max-width: 680px; margin: 0 auto; }
   body.list #top { padding-top: calc(max(16px, env(safe-area-inset-top)) + 84px); }
   #list .wrap { padding: 8px 20px 96px; }
-  .sec { margin-top: 64px; }
-  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-    border-bottom: 1px solid var(--rule); padding-bottom: 10px; margin-bottom: 6px; }
+  .sec { margin-top: 0; border-bottom: 1px solid var(--rule); }
+  #list .wrap > .sec:first-child { margin-top: 40px; border-top: 1px solid var(--rule); }
+  .sec-head { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 18px 2px; cursor: pointer; list-style: none; }
+  .sec-head::-webkit-details-marker { display: none; }
   .sec-title { font-weight: 400; font-size: 30px; line-height: 1.1; }
-  .sec-desc { font-style: italic; font-size: 16px; color: var(--muted); text-align: right; }
+  .sec-mark { position: relative; width: 14px; height: 14px; flex-shrink: 0; color: var(--muted); }
+  .sec-mark::before, .sec-mark::after { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: currentColor; transition: transform .3s ease; }
+  .sec-mark::after { transform: rotate(90deg); }
+  .sec[open] .sec-mark::after { transform: rotate(0deg); }
+  .sec-head:hover .sec-mark { color: var(--ink); }
+  .sec-body { padding: 0 2px 26px; }
   .about-text { font-size: 19px; line-height: 1.7; }
   .about-text p + p { margin-top: 16px; }
   .about-text a, .d-body a { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; text-decoration-color: var(--faint); }
@@ -337,7 +346,6 @@
     <div class="panel-head">
       <div>
         <div class="panel-title" id="panel-title"></div>
-        <div class="panel-desc" id="panel-desc"></div>
       </div>
       <button type="button" class="close" onclick="closePanel()">close</button>
     </div>
@@ -354,7 +362,7 @@ const ABOUT = `
   <p>i'm a consultant in nyc. most days i sit between the people who want an ai product and the engineers building it, and try to get it from a deck to something people use. before that, i did diligence and integration work on tech deals.</p>
   <p>after hours, i write long breakdowns of ai applications on <a href="https://substack.com/@notshananigans" target="_blank" rel="noopener">substack</a>: who buys them, why, and what has to be true for them to work. i also vibe code, mostly by forking open-source projects and pulling them apart until i understand them.</p>
   <p>in between, i'm taking damage at barry's or overinterpreting art.</p>
-  <p>please reach me on <a href="https://x.com/notshananigans" target="_blank" rel="noopener">x</a>, where ai projects, art and miscellany are very much solicited :D</p>
+  <p>please reach me on <a href="https://x.com/notshananigans" target="_blank" rel="noopener">x</a>, where ai projects, art and miscellany are very much solicited</p>
 `;
 
 const WRITING = [
@@ -411,23 +419,12 @@ const BUILDS = [
   }
 ];
 
-const QUESTS = [
-  { name: 'run a half marathon', status: 'completed', detail: '3.24.2025 · philly love run' },
-  { name: 'run a full marathon', status: 'scheduled', detail: '11.1.2026 · nyc marathon' },
-  { name: 'produce techno', status: 'progress' },
-  { name: 'read everything stripe press recommends', status: 'progress' },
-  { name: 'make an mmorpg', status: 'open' },
-  { name: 'publish short stories', status: 'open' },
-  { name: 'make an animated series', status: 'open' },
-  { name: '3d print figurines', status: 'open' }
-];
 
 const SECTIONS = {
-  about:      { title: 'about', desc: 'center of it all' },
-  writing:    { title: 'writing', desc: "rabbit holes i've gone down" },
-  vibecoding: { title: 'vibe coding', desc: 'small things, taken apart' },
-  art:        { title: 'art', desc: 'tbd' },
-  quests:     { title: 'side quests', desc: 'do we have quests in common?' }
+  about:      { title: 'about', desc: '' },
+  writing:    { title: 'writing', desc: '' },
+  vibecoding: { title: 'vibe coding', desc: '' },
+  art:        { title: 'art', desc: '' }
 };
 
 /* ───────────── RENDERERS (shared by panel + list) ───────────── */
@@ -467,31 +464,20 @@ function renderBuilds() {
   </div>`;
 }
 
-function renderQuests() {
-  const label = { completed: 'done ✓', scheduled: 'scheduled', progress: 'in progress', open: 'someday' };
-  return `<div class="items">${QUESTS.map(q => `
-    <div class="quest">
-      <span class="q-status ${q.status}">${label[q.status]}</span>
-      <span class="q-name">${q.name}${q.detail ? `<span class="q-detail">${q.detail}</span>` : ''}</span>
-    </div>`).join('')}
-  </div>`;
-}
-
 const RENDER = {
   about: () => `<div class="about-text">${ABOUT}</div>`,
   writing: renderWriting,
   vibecoding: renderBuilds,
-  art: () => `<p class="tbd">tbd</p>`,
-  quests: renderQuests
+  art: () => `<p class="tbd">tbd</p>`
 };
 
 /* ───────────── LIST VIEW ───────────── */
 
-document.getElementById('list-wrap').innerHTML = ['writing', 'vibecoding', 'art', 'quests', 'about'].map(k => `
-  <section class="sec" id="sec-${k}">
-    <div class="sec-head"><h2 class="sec-title">${SECTIONS[k].title}</h2><span class="sec-desc">${SECTIONS[k].desc}</span></div>
-    ${RENDER[k]()}
-  </section>`).join('');
+document.getElementById('list-wrap').innerHTML = ['about', 'vibecoding', 'writing', 'art'].map(k => `
+  <details class="sec" id="sec-${k}">
+    <summary class="sec-head"><h2 class="sec-title">${SECTIONS[k].title}</h2><span class="sec-mark" aria-hidden="true"></span></summary>
+    <div class="sec-body">${RENDER[k]()}</div>
+  </details>`).join('');
 
 /* ───────────── ORBIT VIEW ───────────── */
 
@@ -673,7 +659,7 @@ function applyTheme(t, save) {
 }
 document.getElementById('theme-toggle').addEventListener('click', () =>
   applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light', true));
-applyTheme(document.documentElement.dataset.theme || 'dark', false);
+applyTheme(document.documentElement.dataset.theme || 'light', false);
 
 let initial = 'orbit';
 try { initial = localStorage.getItem('shanz-view') || 'orbit'; } catch (e) {}
@@ -689,7 +675,6 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
 const panel = document.getElementById('panel');
 function openPanel(key) {
   document.getElementById('panel-title').textContent = SECTIONS[key].title;
-  document.getElementById('panel-desc').textContent = SECTIONS[key].desc;
   document.getElementById('panel-body').innerHTML = RENDER[key]();
   document.getElementById('panel-inner').scrollTop = 0;
   panel.classList.add('active');
