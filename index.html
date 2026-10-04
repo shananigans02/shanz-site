@@ -298,10 +298,10 @@
 /* ───────────── CONTENT ───────────── */
 
 const ABOUT = `
-  <p>by day i work in ai product strategy &amp; ops, in consulting. most of it is sitting between the people who want an ai product and the engineers building it, and getting it from prototype to something people actually use. before that i did diligence and integration work on tech deals.</p>
-  <p>in my free time i write long commercial breakdowns of ai companies: who buys, why, what has to be true, and how the plan is going so far.</p>
-  <p>i also build small things. mostly i fork repos i think are cool and take them apart until i understand them.</p>
-  <p>based in nyc. find me on <a href="https://substack.com/@notshananigans" target="_blank" rel="noopener">substack</a> and <a href="https://x.com/notshananigans" target="_blank" rel="noopener">x</a>, where projects, art, music and miscellany are very much solicited :D</p>
+  <p>i'm a consultant in nyc. most days i sit between the people who want an ai product and the engineers building it, and try to get it from a deck to something people use. before that, i did diligence and integration work on tech deals.</p>
+  <p>after hours, i write long breakdowns of ai applications on <a href="https://substack.com/@notshananigans" target="_blank" rel="noopener">substack</a>: who buys them, why, and what has to be true for them to work. i also vibe code, mostly by forking open-source projects and pulling them apart until i understand them.</p>
+  <p>in between, i'm taking damage at barry's or overinterpreting art.</p>
+  <p>please reach me on <a href="https://x.com/notshananigans" target="_blank" rel="noopener">x</a>, where ai projects, art and miscellany are very much solicited :D</p>
 `;
 
 const WRITING = [
@@ -547,7 +547,7 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 let last = performance.now();
 function tick(now) {
   const dt = Math.min((now - last) / 1000, 0.05); last = now;
-  const k = reduceMotion ? 0 : 1;
+  const k = reduceMotion ? 0.5 : 1; // always orbit; just slower if the visitor prefers less motion
   planetEls.forEach(item => {
     item.a += item.p.speed * dt * k;
     const { x, y } = pos(item.p.r, item.a);
