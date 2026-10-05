@@ -8,16 +8,17 @@
 <meta name="theme-color" content="#6f86ad"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bodoni+Moda:opsz,wght@6..96,900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Cinzel:wght@900&display=swap" rel="stylesheet"/>
 <style>
   :root {
-    --gold: #f2c230;
-    --gold-deep: #c98a12;
+    --gold: #ffd60a;
+    --gold-deep: #e39b00;
     --gold-dark: #6b4205;
     --ice: #e8f0ff;
     --navy: #1c2b4a;
     --ui: 'Archivo Black', 'Arial Black', sans-serif;
-    --display: 'Bodoni Moda', 'Didot', 'Times New Roman', serif;
+    --jewel: 'Cinzel', serif;
+    --display: 'Cinzel', 'Times New Roman', serif;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -36,21 +37,16 @@
                 radial-gradient(ellipse at 50% 120%, rgba(20,30,60,.45), transparent 60%);
   }
 
-  /* ── giant diamond letters: a gold extrusion layer under a crystal-faced layer ── */
-  .word { position: fixed; left: 0; right: 0; z-index: 1; text-align: center; pointer-events: none;
-    font-family: var(--display); font-weight: 900; line-height: .9; letter-spacing: -.01em; white-space: nowrap;
-    font-size: clamp(84px, 15vw, 230px); }
-  .word.top { top: -.22em; }
-  .word.bottom { bottom: -.2em; }
-  .word { overflow: hidden; padding-bottom: .12em; }
-  @supports (overflow: clip) { .word { overflow: visible; overflow-x: clip; padding-bottom: 0; } }
-  .word span { display: flex; justify-content: center; }
-  .word .back { color: var(--gold-deep);
-    text-shadow: 1px 1px 0 #f7d35a, 2px 2px 0 #e9b333, 3px 3px 0 #d79a1c, 4px 4px 0 #c08414, 5px 5px 0 #a86f0e,
-                 6px 6px 0 #8f5b0a, 7px 7px 0 #7a4c07, 8px 8px 0 var(--gold-dark), 10px 14px 24px rgba(20,25,50,.45); }
-  .word .front { position: absolute; left: 0; right: 0; top: 0; color: transparent;
-    -webkit-background-clip: text; background-clip: text; background-size: 180px 180px;
-    -webkit-text-stroke: .05em var(--gold); paint-order: stroke fill; }
+  /* ── giant gold-bar letters with a crushed-diamond inset, drawn on canvas ── */
+  .word { position: fixed; left: 0; right: 0; z-index: 1; pointer-events: none; display: flex; justify-content: center;
+    overflow: hidden; --fs: clamp(90px, min(15.5vw, 25vh), 240px); }
+  @supports (overflow: clip) { .word { overflow: visible; overflow-x: clip; } }
+  .word.top { top: 0; }
+  .word.bottom { bottom: 0; }
+  .word canvas { display: block; flex: none; opacity: 0; transition: opacity .8s; }
+  .word canvas.on { opacity: 1; }
+  .word.top canvas { transform-origin: 50% 100%; transform: translateY(var(--ty, 0)) perspective(900px) rotateX(-16deg); }
+  .word.bottom canvas { transform-origin: 50% 0; transform: translateY(var(--ty, 0)) perspective(900px) rotateX(16deg); }
 
   /* sparkles */
   .sparkle { position: fixed; z-index: 2; width: 26px; height: 26px; pointer-events: none;
@@ -67,7 +63,7 @@
   .wstrip:active { cursor: grabbing; box-shadow: 0 20px 40px rgba(20,30,60,.5); }
   .wstrip img { display: block; width: 100%; pointer-events: none; user-select: none; -webkit-user-drag: none; }
   .clip { position: absolute; left: 50%; top: -11px; transform: translateX(-50%); width: 30px; height: 20px; border-radius: 3px; z-index: 2;
-    background: linear-gradient(135deg, #fff6c9, #e0a92a 45%, #8a5a0c 70%, #ffe9a0); box-shadow: 0 2px 5px rgba(0,0,0,.45); }
+    background: linear-gradient(135deg, #fffbd0, #ffd60a 40%, #c47a00 72%, #fff07a); box-shadow: 0 2px 5px rgba(0,0,0,.45); }
 
   /* ── booth ── */
   #booth { position: relative; z-index: 4; min-height: 100dvh; display: grid; place-items: center; padding: 16px; pointer-events: none; }
@@ -99,7 +95,7 @@
   .label { font-size: 12px; letter-spacing: .18em; color: var(--navy); text-shadow: 0 1px 0 rgba(255,255,255,.6); text-align: center; }
   .label b { color: #fff; text-shadow: 0 1px 4px rgba(20,30,60,.5); font-weight: 400; }
   #shutter { width: 82px; height: 82px; border-radius: 50%; display: grid; place-items: center;
-    background: linear-gradient(135deg, #fff6c9, #e0a92a 45%, #8a5a0c 70%, #ffe9a0); box-shadow: 0 10px 24px rgba(20,30,60,.45); transition: transform .15s; }
+    background: linear-gradient(135deg, #fffbd0, #ffd60a 40%, #c47a00 72%, #fff07a); box-shadow: 0 10px 24px rgba(20,30,60,.45); transition: transform .15s; }
   #shutter::after { content: ''; width: 62px; height: 62px; border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #fff, #c9d6ee 40%, #7c8fb3); box-shadow: inset 0 -3px 8px rgba(20,30,60,.35); }
   #shutter:hover { transform: scale(1.05); }
@@ -137,7 +133,7 @@
   #enter .card { display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; padding: 24px;
     background: rgba(255,255,255,.45); border-radius: 18px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.8), 0 20px 50px rgba(20,30,60,.25); }
   #enter-btn { font-size: 14px; letter-spacing: .2em; padding: 16px 30px; border-radius: 40px; color: #3a2400;
-    background: linear-gradient(135deg, #fff6c9, #f2c230 45%, #c98a12 75%, #ffe9a0); box-shadow: 0 10px 24px rgba(107,66,5,.35); }
+    background: linear-gradient(135deg, #fffbd0, #ffe14a 35%, #ffc400 60%, #e39b00 85%, #fff07a); box-shadow: 0 10px 24px rgba(107,66,5,.35); }
   .small { font-size: 10px; letter-spacing: .14em; color: var(--navy); max-width: 260px; line-height: 1.7; }
   .err { color: #8a1010; }
   .err:empty { display: none; }
@@ -149,7 +145,7 @@
     .frame { width: min(86vw, 420px); }
     .controls { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 16px 22px; min-width: 0; }
     .controls .label.top { order: -1; width: 100%; }
-    .word { font-size: 21vw; position: absolute; }
+    .word { --fs: 15vw; position: absolute; }
     html, body { height: auto; }
     body { position: relative; min-height: 100dvh; }
     /* on phones the wall is a gold clothesline under the booth */
@@ -166,8 +162,8 @@
 <body>
 
 <div id="marble"></div>
-<div class="word top" aria-hidden="true"><span class="back">GET IN</span><span class="front">GET IN</span></div>
-<div class="word bottom" aria-hidden="true"><span class="back">DA BOOTH</span><span class="front">DA BOOTH</span></div>
+<div class="word top" aria-hidden="true" data-text="GET IN"></div>
+<div class="word bottom" aria-hidden="true" data-text="DA BOOTH"></div>
 <div id="sparkles"></div>
 <div id="wall" aria-label="your wall of strips"></div>
 
@@ -225,34 +221,125 @@
   document.getElementById('marble').style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 })();
 
-// diamond crystal texture for the letter faces
-(function crystal() {
-  const c = document.createElement('canvas'); c.width = c.height = 180;
-  const x = c.getContext('2d');
-  x.fillStyle = '#eef3ff'; x.fillRect(0, 0, 180, 180);
-  const tones = ['#ffffff', '#f4f7ff', '#dfe8f5', '#c4d2ea', '#9fb4d6', '#7c8fb3', '#fdfbff', '#e6ecff'];
-  const step = 15;
-  for (let gy = 0; gy < 180; gy += step) for (let gx = 0; gx < 180; gx += step) {
-    const pts = [[gx, gy], [gx + step, gy], [gx + step, gy + step], [gx, gy + step]].map(([a, b]) => [a + (Math.random() - .5) * 5, b + (Math.random() - .5) * 5]);
-    const cx = gx + step / 2 + (Math.random() - .5) * 4, cy = gy + step / 2 + (Math.random() - .5) * 4;
-    for (let i = 0; i < 4; i++) {
-      const [a, b] = [pts[i], pts[(i + 1) % 4]];
-      x.beginPath(); x.moveTo(cx, cy); x.lineTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.closePath();
-      x.fillStyle = tones[(Math.random() * tones.length) | 0]; x.fill();
-      x.strokeStyle = 'rgba(90,110,150,.35)'; x.lineWidth = .6; x.stroke();
+// chiseled gold bar letters with a crushed-diamond inset, rendered per pixel
+function jewelWord(text, family, px, opt = {}) {
+  const grow = px * (opt.grow ?? .045), rim = Math.round(px * (opt.rim || .05)), depth = Math.round(px * (opt.depth || .07)), pad = Math.round(px * .3);
+  const m = document.createElement('canvas').getContext('2d');
+  const font = `900 ${px}px ${family}`;
+  m.font = font; if (opt.spacing) m.letterSpacing = opt.spacing + 'px';
+  const met = m.measureText(text);
+  const asc = met.actualBoundingBoxAscent, desc = met.actualBoundingBoxDescent;
+  const W = Math.ceil(met.width + pad * 2 + grow * 2), H = Math.ceil(asc + desc + pad * 2 + depth);
+  const ox = pad, oy = pad + asc;
+  const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d'); x.font = font; if (opt.spacing) x.letterSpacing = opt.spacing + 'px'; x.lineJoin = 'miter'; x.miterLimit = 2.2; return [c, x]; };
+  const alpha = c => { const d = c.getContext('2d').getImageData(0, 0, W, H).data, a = new Float32Array(W * H); for (let i = 0; i < a.length; i++) a[i] = d[i * 4 + 3] / 255; return a; };
+  const shape = (x, dx, dy, g, col) => { x.fillStyle = x.strokeStyle = col; x.fillText(text, ox + dx, oy + dy); if (g > 0) { x.lineWidth = g * 2; x.strokeText(text, ox + dx, oy + dy); } };
+  // masks: the letter fattened by grow, and its inset eroded by the rim
+  const [cf, xf] = mk(); shape(xf, 0, 0, grow, '#fff'); const F = alpha(cf);
+  // inset = the fat letter eroded by the rim (intersect shifted copies, so overlapping contours don't leave seams)
+  const [ci, xi] = mk(); xi.drawImage(cf, 0, 0); xi.globalCompositeOperation = 'destination-in';
+  for (let j = 0; j < 28; j++) { const a = j / 28 * 6.2832; xi.drawImage(cf, Math.cos(a) * rim, Math.sin(a) * rim); }
+  const I = alpha(ci);
+  const R = new Float32Array(W * H); for (let i = 0; i < R.length; i++) R[i] = Math.max(0, F[i] - I[i]);
+  // separable box blur, 3 passes ≈ gaussian
+  function blur(src, r) {
+    r = Math.max(1, Math.round(r)); let a = Float32Array.from(src), b = new Float32Array(src.length);
+    for (let pass = 0; pass < 3; pass++) {
+      for (let y = 0; y < H; y++) { let s = 0; const row = y * W; for (let x = -r; x <= r; x++) s += a[row + Math.min(W - 1, Math.max(0, x))];
+        for (let x = 0; x < W; x++) { b[row + x] = s / (2 * r + 1); s += a[row + Math.min(W - 1, x + r + 1)] - a[row + Math.max(0, x - r)]; } }
+      for (let x = 0; x < W; x++) { let s = 0; for (let y = -r; y <= r; y++) s += b[Math.min(H - 1, Math.max(0, y)) * W + x];
+        for (let y = 0; y < H; y++) { a[y * W + x] = s / (2 * r + 1); s += b[Math.min(H - 1, y + r + 1) * W + x] - b[Math.max(0, y - r) * W + x]; } }
+    }
+    return a;
+  }
+  const h = blur(R, rim * .32), hi = blur(I, rim * .5);
+  // diamond texture: shards, glints, a little rainbow fire
+  const [ct, xt] = mk(); xt.fillStyle = '#b9c8e6'; xt.fillRect(0, 0, W, H);
+  const tones = ['#ffffff', '#ffffff', '#ffffff', '#f6f9ff', '#e8eefc', '#d6e0f5', '#c0cfec', '#a5b8de', '#8197c8', '#5c71a6', '#34467c', '#141c42', '#eaf0ff', '#cfdaf2', '#dfe6ff'];
+  const sh = px * (opt.shard || .04), n = Math.round(W * H / (sh * sh) * 1.5);
+  for (let i = 0; i < n; i++) {
+    const x = Math.random() * W, y = Math.random() * H, s = sh * (.45 + Math.random() * 1.2), r0 = Math.random() * 7;
+    xt.beginPath(); const k = 3 + (Math.random() * 3 | 0);
+    for (let j = 0; j < k; j++) { const a = r0 + j / k * 6.283 + (Math.random() - .5) * .9, rr = s * (.5 + Math.random() * .7); xt[j ? 'lineTo' : 'moveTo'](x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+    xt.closePath();
+    const g = xt.createLinearGradient(x - s, y - s, x + s, y + s);
+    g.addColorStop(0, tones[Math.random() * tones.length | 0]); g.addColorStop(1, tones[Math.random() * tones.length | 0]);
+    xt.fillStyle = g; xt.fill();
+    if (Math.random() < .5) { xt.strokeStyle = 'rgba(12,18,48,.55)'; xt.lineWidth = Math.max(.6, sh * .05); xt.stroke(); }
+  }
+  for (let i = 0; i < n * .08; i++) { xt.fillStyle = `hsla(${180 + Math.random() * 160},100%,75%,.5)`; xt.beginPath(); xt.arc(Math.random() * W, Math.random() * H, sh * (.12 + Math.random() * .3), 0, 7); xt.fill(); }
+  for (let i = 0; i < n * .35; i++) { // sparkle points with a soft halo
+    const x = Math.random() * W, y = Math.random() * H, s = sh * (.15 + Math.random() * .45);
+    const g = xt.createRadialGradient(x, y, 0, x, y, s); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.35, 'rgba(255,255,255,.7)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    xt.fillStyle = g; xt.fillRect(x - s, y - s, s * 2, s * 2);
+  }
+  const T = xt.getImageData(0, 0, W, H).data;
+  // gold ramp: deep amber shadow → neon yellow face → white-hot highlight
+  const stops = [[0, [110, 55, 0]], [.2, [196, 118, 0]], [.38, [246, 180, 0]], [.55, [255, 214, 0]], [.7, [255, 236, 20]], [.86, [255, 250, 120]], [1, [255, 255, 230]]];
+  const ramp = t => { t = Math.min(1, Math.max(0, t)); for (let i = 1; i < stops.length; i++) if (t <= stops[i][0]) { const [a, ca] = stops[i - 1], [b, cb] = stops[i], f = (t - a) / (b - a); return ca.map((v, k) => v + (cb[k] - v) * f); } return stops[stops.length - 1][1]; };
+  const [co, xo] = mk(); const out = xo.createImageData(W, H), O = out.data;
+  const L = [-.45, -.7, .55], ll = Math.hypot(...L); L.forEach((v, i) => L[i] = v / ll);
+  const Hh = [L[0], L[1], L[2] + 1], hl = Math.hypot(...Hh); Hh.forEach((v, i) => Hh[i] = v / hl);
+  const k = rim * 1.9;
+  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+    const i = y * W + x; if (F[i] < .01) continue;
+    let r, g, b;
+    // rim: bevel lighting
+    let nx = -(h[i + 1] - h[i - 1]) * k, ny = -(h[i + W] - h[i - W]) * k, nz = 1; const nl = Math.hypot(nx, ny, nz); nx /= nl; ny /= nl; nz /= nl;
+    const dif = Math.max(0, nx * L[0] + ny * L[1] + nz * L[2]);
+    const spec = Math.pow(Math.max(0, nx * Hh[0] + ny * Hh[1] + nz * Hh[2]), 40);
+    const band = .5 + .5 * Math.sin((y / H) * 9 + nx * 3); // polished-bar reflections
+    const c = ramp(dif * .92 + band * .12 - .06 + spec * .5);
+    const rr = c[0] + spec * 60, rg = c[1] + spec * 60, rb = c[2] + spec * 60;
+    // diamond inset with inner shadow at the rim
+    const sd = Math.min(1, hi[i] * 1.6), vert = 1.08 - (y / H) * .25;
+    const t4 = i * 4, dr = T[t4] * sd * vert, dg = T[t4 + 1] * sd * vert, db = T[t4 + 2] * sd * vert;
+    const wI = I[i] / Math.max(F[i], .001);
+    r = rr * (1 - wI) + dr * wI; g = rg * (1 - wI) + dg * wI; b = rb * (1 - wI) + db * wI;
+    O[i * 4] = r; O[i * 4 + 1] = g; O[i * 4 + 2] = b; O[i * 4 + 3] = F[i] * 255;
+  }
+  xo.putImageData(out, 0, 0);
+  // final: drop shadow, gold extrusion, face, glints
+  const [cz, xz] = mk();
+  xz.save(); xz.shadowColor = 'rgba(15,20,45,.55)'; xz.shadowBlur = px * .08; xz.shadowOffsetY = depth + px * .03; shape(xz, 0, depth, grow, '#7a4200'); xz.restore();
+  for (let d = depth; d >= 1; d--) { const t = d / depth; shape(xz, d * .25, d, grow, `rgb(${235 - t * 110},${165 - t * 95},${10 - t * 10})`); }
+  shape(xz, 0, 1.5, grow, 'rgba(255,230,60,.95)');
+  xz.drawImage(co, 0, 0);
+  const glints = Math.round(W / px * 2.2);
+  for (let g = 0; g < glints; g++) {
+    let i = 0; for (let tries = 0; tries < 400; tries++) { const cand = (Math.random() * W * H) | 0; if (R[cand] > .5 && h[cand] > .3) { i = cand; break; } }
+    if (!i) continue; const gx = i % W, gy = (i / W) | 0, s = px * (.1 + Math.random() * .16);
+    const grd = xz.createRadialGradient(gx, gy, 0, gx, gy, s * .35); grd.addColorStop(0, 'rgba(255,255,255,1)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+    xz.fillStyle = grd; xz.beginPath(); xz.arc(gx, gy, s * .35, 0, 7); xz.fill();
+    xz.fillStyle = '#fff';
+    for (const [a, l, w] of [[0, s, s * .035], [Math.PI / 2, s, s * .035], [Math.PI / 4, s * .45, s * .02], [-Math.PI / 4, s * .45, s * .02]]) {
+      xz.save(); xz.translate(gx, gy); xz.rotate(a); xz.beginPath(); xz.moveTo(-l, 0); xz.lineTo(0, -w); xz.lineTo(l, 0); xz.lineTo(0, w); xz.closePath(); xz.fill(); xz.restore();
     }
   }
-  for (let i = 0; i < 70; i++) { // glints
-    x.fillStyle = `rgba(255,255,255,${.6 + Math.random() * .4})`;
-    x.beginPath(); x.arc(Math.random() * 180, Math.random() * 180, Math.random() * 1.6 + .4, 0, 7); x.fill();
-  }
-  for (let i = 0; i < 10; i++) { // the odd rainbow fire in the stones
-    x.fillStyle = `hsla(${Math.random() * 360},90%,70%,.35)`;
-    x.beginPath(); x.arc(Math.random() * 180, Math.random() * 180, 2 + Math.random() * 3, 0, 7); x.fill();
-  }
-  const url = c.toDataURL();
-  document.querySelectorAll('.word .front').forEach(el => el.style.backgroundImage = `url(${url})`);
-})();
+  return { canvas: cz, pad, asc, desc, depth };
+}
+
+// draw the two big words to fit the screen; redraw if the size changes a lot
+let wordPx = 0;
+async function drawWords() {
+  const probe = document.querySelector('.word');
+  const fs = parseFloat(getComputedStyle(probe).getPropertyValue('--fs')) || parseFloat(getComputedStyle(probe).fontSize);
+  const css = (() => { const t = document.createElement('div'); t.style.cssText = 'position:absolute;visibility:hidden;width:var(--fs)'; probe.appendChild(t); const w = t.getBoundingClientRect().width; t.remove(); return w; })();
+  const px = Math.round(Math.min(300, css * Math.min(devicePixelRatio || 1, 2)));
+  if (Math.abs(px - wordPx) < 24) return; wordPx = px;
+  try { await document.fonts.load(`900 ${px}px Cinzel`); } catch (e) {}
+  const f = css / px;
+  document.querySelectorAll('.word').forEach(el => {
+    const j = jewelWord(el.dataset.text, 'Cinzel, serif', px, { rim: .055, depth: .1 });
+    const c = j.canvas; c.style.width = c.width * f + 'px'; c.style.height = c.height * f + 'px';
+    // crop into the screen edges like the album cover: lose a slice of the top word's head and the bottom word's feet
+    const ty = el.classList.contains('top') ? -(j.pad + j.asc * .2) * f : (j.pad + j.desc + j.asc * .12) * f;
+    c.style.setProperty('--ty', ty + 'px');
+    el.innerHTML = ''; el.appendChild(c); requestAnimationFrame(() => c.classList.add('on'));
+  });
+}
+drawWords();
+let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(drawWords, 300); });
 
 (function sparkles() {
   const host = document.getElementById('sparkles');
@@ -505,7 +592,7 @@ async function takeFour() {
 }
 
 function composeStrip(shots) {
-  const W = 480, pad = 28, gap = 18, footer = 120;
+  const W = 480, pad = 28, gap = 18, footer = 150;
   const c = document.createElement('canvas');
   c.width = W + pad * 2; c.height = pad + shots.length * (600 + gap) - gap + footer;
   const x = c.getContext('2d');
@@ -514,12 +601,14 @@ function composeStrip(shots) {
   // a thin gold rule and the footer
   x.strokeStyle = '#d79a1c'; x.lineWidth = 3;
   x.strokeRect(pad - 8, pad - 8, W + 16, shots.length * (600 + gap) - gap + 16);
+  const title = jewelWord('GET IN DA BOOTH', 'Cinzel, serif', 60, { rim: .06, depth: .08, shard: .06 }).canvas;
+  const tw = W + 40, th = title.height * tw / title.width;
+  x.drawImage(title, c.width / 2 - tw / 2, c.height - footer + 4, tw, th);
   x.fillStyle = '#1c2b4a'; x.textAlign = 'center';
-  x.font = '900 46px "Bodoni Moda", serif';
-  x.fillText('GET IN DA BOOTH', c.width / 2, c.height - 62);
-  x.font = '18px "Archivo Black", sans-serif';
   const d = new Date();
-  x.fillText(`${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}  ·  ${shots.map(s => s.mood).join(' / ')}`, c.width / 2, c.height - 28);
+  const line = `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}  ·  ${shots.map(s => s.mood).join(' / ')}`;
+  let fsz = 17; do { x.font = `${fsz}px "Archivo Black", sans-serif`; fsz--; } while (x.measureText(line).width > W && fsz > 9);
+  x.fillText(line, c.width / 2, c.height - 28);
   return c;
 }
 
