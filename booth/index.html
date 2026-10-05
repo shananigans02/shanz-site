@@ -379,7 +379,7 @@ const FS = `precision mediump float;
 varying vec2 uv;
 uniform sampler2D cam, g1, g2;
 uniform vec2 crop, off;          // cover-fit the camera into the 4:5 frame
-uniform vec3 tint; uniform float tintAmt, mode, time, flash;
+uniform vec3 cS, cM, cH; uniform float mode, time, flash;
 float lum(vec3 c){ return dot(c, vec3(.299,.587,.114)); }
 float rnd(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)) + time) * 43758.5453); }
 vec2 camUV(vec2 u){ return vec2(1. - u.x, 1. - u.y) * crop + off; } // mirrored, flipped for gl
@@ -387,15 +387,14 @@ void main(){
   vec2 q = camUV(uv);
   vec3 c;
   if (mode < .5) {
-    c = texture2D(cam, q).rgb;
-    c = (c - .5) * 1.22 + .5;                                  // contrast
-    float l = lum(c);
-    vec3 sepia = vec3(l) * vec3(1.10, .90, .70);
-    c = mix(c, sepia, .30);                                    // warm, aged
-    c *= vec3(1.06, 1.0, .88);
-    c = mix(c, floor(c * 6. + .5) / 6., .45);                  // a little posterized, like print
-    vec3 washed = tint * (l * 1.35 + .12);
-    c = mix(c, washed, tintAmt);                               // mood color stays readable
+    // the cover's look: a grainy three-tone print. dark shadows, a mood-colored middle, pale highlights
+    vec3 src = texture2D(cam, q).rgb;
+    float l = lum(src);
+    l = clamp((l - .5) * 1.35 + .52, 0., 1.);                   // contrast
+    vec2 cell = floor(uv * vec2(260., 325.));                   // coarse print grain
+    l = clamp(l + (rnd(cell) - .5) * .22 + (rnd(uv * 1100.) - .5) * .08, 0., 1.);
+    c = l < .5 ? mix(cS, cM, smoothstep(0., .5, l)) : mix(cM, cH, smoothstep(.5, 1., l));
+    c = mix(c, src * (cM * .6 + .55), .12);                     // a trace of real color for skin
   } else {
     // double exposure: high-contrast black and white, with ghosts of the last second of movement
     float a = smoothstep(.22, .82, lum(texture2D(cam, q).rgb));
@@ -428,8 +427,8 @@ const texCam = makeTex(0), texG = [makeTex(1), makeTex(2)];
 gl.uniform1i(U('cam'), 0); gl.uniform1i(U('g1'), 1); gl.uniform1i(U('g2'), 2);
 
 let filterMode = 'mood';
-const tintNow = [0, 0, 0], tintGoal = [0, 0, 0];
-let tintAmt = 0, tintAmtGoal = 0, flashAmt = 0, lastGhost = 0, ghostFlip = 0;
+const palNow = [], palGoal = [];
+let flashAmt = 0, lastGhost = 0, ghostFlip = 0;
 
 function sizeCanvas() {
   const r = view.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
@@ -452,12 +451,12 @@ function render(now) {
     let sx = 1, sy = 1; if (va > fa) sx = fa / va; else sy = va / fa;
     gl.uniform2f(U('crop'), sx, sy); gl.uniform2f(U('off'), (1 - sx) / 2, (1 - sy) / 2);
   }
-  for (let i = 0; i < 3; i++) tintNow[i] += (tintGoal[i] - tintNow[i]) * .08;
-  tintAmt += (tintAmtGoal - tintAmt) * .08;
+  for (let i = 0; i < 9; i++) palNow[i] += (palGoal[i] - palNow[i]) * .08;
   flashAmt *= .86;
   gl.viewport(0, 0, view.width, view.height);
-  gl.uniform3f(U('tint'), tintNow[0], tintNow[1], tintNow[2]);
-  gl.uniform1f(U('tintAmt'), tintAmt);
+  gl.uniform3f(U('cS'), palNow[0], palNow[1], palNow[2]);
+  gl.uniform3f(U('cM'), palNow[3], palNow[4], palNow[5]);
+  gl.uniform3f(U('cH'), palNow[6], palNow[7], palNow[8]);
   gl.uniform1f(U('mode'), filterMode === 'double' ? 1 : 0);
   gl.uniform1f(U('time'), (now % 10000) / 1000);
   gl.uniform1f(U('flash'), flashAmt);
@@ -466,13 +465,18 @@ function render(now) {
 
 /* ───────────────────────── reading the face and hands ───────────────────────── */
 
+// each mood is a three-tone print: shadow, middle, highlight. neutral is the cover's rust red
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
 const MOODS = {
-  happy:     { rgb: [1.0, .78, .18], amt: .42, label: 'HAPPY' },
-  angry:     { rgb: [.95, .12, .10], amt: .48, label: 'ANGRY' },
-  sad:       { rgb: [.28, .42, 1.0], amt: .45, label: 'SAD' },
-  surprised: { rgb: [1.0, .97, .90], amt: .25, label: 'SURPRISED' },
-  neutral:   { rgb: [0, 0, 0],       amt: 0,   label: 'NEUTRAL' }
+  neutral:   { pal: ['#1c0503', '#b8361f', '#f7b49c'], label: 'NEUTRAL' },
+  happy:     { pal: ['#2e1300', '#e0921a', '#fff3b0'], label: 'HAPPY' },
+  angry:     { pal: ['#170000', '#c8101c', '#ff9a80'], label: 'ANGRY' },
+  sad:       { pal: ['#080d2a', '#3552a6', '#cad9ff'], label: 'SAD' },
+  surprised: { pal: ['#2a0a12', '#e0607a', '#ffffff'], label: 'SURPRISED' }
 };
+Object.values(MOODS).forEach(m => m.rgb = m.pal.flatMap(hex));
+palNow.push(...MOODS.neutral.rgb); palGoal.push(...MOODS.neutral.rgb);
+function aimPalette() { const p = MOODS[filterMode === 'mood' ? mood : 'neutral'].rgb; for (let i = 0; i < 9; i++) palGoal[i] = p[i]; }
 let mood = 'neutral', moodSince = 0;
 const smooth = {};
 const ema = (k, v, a = .35) => (smooth[k] = smooth[k] == null ? v : smooth[k] + (v - smooth[k]) * a);
@@ -490,7 +494,7 @@ function setMood(m) {
   if (m === mood) return;
   mood = m; moodSince = performance.now();
   const cfg = MOODS[m];
-  tintGoal[0] = cfg.rgb[0]; tintGoal[1] = cfg.rgb[1]; tintGoal[2] = cfg.rgb[2]; tintAmtGoal = filterMode === 'mood' ? cfg.amt : 0;
+  aimPalette();
   document.getElementById('mood-text').textContent = 'MOOD · ' + cfg.label;
   if (m === 'surprised' && ready('surprised')) { flashAmt = .55; shout('WOW!'); play('wow'); }
   if (m === 'angry' && ready('angry', 3000)) { shout('FAHH'); play('fahh'); }
@@ -732,7 +736,7 @@ shutter.addEventListener('click', takeFour);
 document.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => {
   filterMode = b.dataset.filter;
   document.querySelectorAll('[data-filter]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-  tintAmtGoal = filterMode === 'mood' ? MOODS[mood].amt : 0;
+  aimPalette();
 }));
 const soundBtn = document.getElementById('sound');
 soundBtn.addEventListener('click', () => { soundOn = !soundOn; soundBtn.textContent = soundOn ? 'SOUND ON' : 'SOUND OFF'; soundBtn.setAttribute('aria-pressed', String(soundOn)); });
