@@ -39,14 +39,14 @@
 
   /* ── giant gold-bar letters with a crushed-diamond inset, drawn on canvas ── */
   .word { position: fixed; left: 0; right: 0; z-index: 1; pointer-events: none; display: flex; justify-content: center;
-    overflow: hidden; --fs: clamp(90px, min(15.5vw, 25vh), 240px); }
+    overflow: hidden; --fs: clamp(80px, min(12.5vw, 20vh), 200px); }
   @supports (overflow: clip) { .word { overflow: visible; overflow-x: clip; } }
   .word.top { top: 0; }
   .word.bottom { bottom: 0; }
   .word canvas { display: block; flex: none; opacity: 0; transition: opacity .8s; }
   .word canvas.on { opacity: 1; }
-  .word.top canvas { transform-origin: 50% 100%; transform: translateY(var(--ty, 0)) perspective(900px) rotateX(-16deg); }
-  .word.bottom canvas { transform-origin: 50% 0; transform: translateY(var(--ty, 0)) perspective(900px) rotateX(16deg); }
+  /* tipped back like the cover: tops fan out, letters stay tall */
+  .word canvas { transform-origin: 50% 100%; transform: translateY(var(--ty, 0)) perspective(calc(var(--fs) * 3.2)) rotateX(-24deg) scale(.86, 1.25); }
 
   /* sparkles */
   .sparkle { position: fixed; z-index: 2; width: 26px; height: 26px; pointer-events: none;
@@ -223,7 +223,7 @@
 
 // chiseled gold bar letters with a crushed-diamond inset, rendered per pixel
 function jewelWord(text, family, px, opt = {}) {
-  const grow = px * (opt.grow ?? .045), rim = Math.round(px * (opt.rim || .05)), depth = Math.round(px * (opt.depth || .07)), pad = Math.round(px * .3);
+  const grow = px * (opt.grow ?? .045), rim = Math.max(2, Math.round(px * (opt.rim || .04))), depth = Math.round(px * (opt.depth || .07)), pad = Math.round(px * .3);
   const m = document.createElement('canvas').getContext('2d');
   const font = `900 ${px}px ${family}`;
   m.font = font; if (opt.spacing) m.letterSpacing = opt.spacing + 'px';
@@ -252,11 +252,11 @@ function jewelWord(text, family, px, opt = {}) {
     }
     return a;
   }
-  const h = blur(R, rim * .32), hi = blur(I, rim * .5);
+  const h = blur(R, rim * (opt.soft || .2)), hi = blur(I, rim * .5);
   // diamond texture: shards, glints, a little rainbow fire
   const [ct, xt] = mk(); xt.fillStyle = '#b9c8e6'; xt.fillRect(0, 0, W, H);
   const tones = ['#ffffff', '#ffffff', '#ffffff', '#f6f9ff', '#e8eefc', '#d6e0f5', '#c0cfec', '#a5b8de', '#8197c8', '#5c71a6', '#34467c', '#141c42', '#eaf0ff', '#cfdaf2', '#dfe6ff'];
-  const sh = px * (opt.shard || .04), n = Math.round(W * H / (sh * sh) * 1.5);
+  const sh = px * (opt.shard || .03), n = Math.round(W * H / (sh * sh) * 1.5);
   for (let i = 0; i < n; i++) {
     const x = Math.random() * W, y = Math.random() * H, s = sh * (.45 + Math.random() * 1.2), r0 = Math.random() * 7;
     xt.beginPath(); const k = 3 + (Math.random() * 3 | 0);
@@ -267,7 +267,7 @@ function jewelWord(text, family, px, opt = {}) {
     xt.fillStyle = g; xt.fill();
     if (Math.random() < .5) { xt.strokeStyle = 'rgba(12,18,48,.55)'; xt.lineWidth = Math.max(.6, sh * .05); xt.stroke(); }
   }
-  for (let i = 0; i < n * .08; i++) { xt.fillStyle = `hsla(${180 + Math.random() * 160},100%,75%,.5)`; xt.beginPath(); xt.arc(Math.random() * W, Math.random() * H, sh * (.12 + Math.random() * .3), 0, 7); xt.fill(); }
+  for (let i = 0; i < n * .14; i++) { xt.fillStyle = `hsla(${Math.random() < .85 ? 170 + Math.random() * 40 : 260 + Math.random() * 80},100%,70%,.6)`; xt.beginPath(); xt.arc(Math.random() * W, Math.random() * H, sh * (.12 + Math.random() * .3), 0, 7); xt.fill(); }
   for (let i = 0; i < n * .35; i++) { // sparkle points with a soft halo
     const x = Math.random() * W, y = Math.random() * H, s = sh * (.15 + Math.random() * .45);
     const g = xt.createRadialGradient(x, y, 0, x, y, s); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.35, 'rgba(255,255,255,.7)'); g.addColorStop(1, 'rgba(255,255,255,0)');
@@ -287,10 +287,9 @@ function jewelWord(text, family, px, opt = {}) {
     // rim: bevel lighting
     let nx = -(h[i + 1] - h[i - 1]) * k, ny = -(h[i + W] - h[i - W]) * k, nz = 1; const nl = Math.hypot(nx, ny, nz); nx /= nl; ny /= nl; nz /= nl;
     const dif = Math.max(0, nx * L[0] + ny * L[1] + nz * L[2]);
-    const spec = Math.pow(Math.max(0, nx * Hh[0] + ny * Hh[1] + nz * Hh[2]), 40);
-    const band = .5 + .5 * Math.sin((y / H) * 9 + nx * 3); // polished-bar reflections
-    const c = ramp(dif * .92 + band * .12 - .06 + spec * .5);
-    const rr = c[0] + spec * 60, rg = c[1] + spec * 60, rb = c[2] + spec * 60;
+    const spec = Math.pow(Math.max(0, nx * Hh[0] + ny * Hh[1] + nz * Hh[2]), 70);
+        const c = ramp(dif * 1.02 + .04 + spec * .35);
+    const rr = c[0] + spec * 40, rg = c[1] + spec * 40, rb = c[2] + spec * 40;
     // diamond inset with inner shadow at the rim
     const sd = Math.min(1, hi[i] * 1.6), vert = 1.08 - (y / H) * .25;
     const t4 = i * 4, dr = T[t4] * sd * vert, dg = T[t4 + 1] * sd * vert, db = T[t4 + 2] * sd * vert;
@@ -302,13 +301,14 @@ function jewelWord(text, family, px, opt = {}) {
   // final: drop shadow, gold extrusion, face, glints
   const [cz, xz] = mk();
   xz.save(); xz.shadowColor = 'rgba(15,20,45,.55)'; xz.shadowBlur = px * .08; xz.shadowOffsetY = depth + px * .03; shape(xz, 0, depth, grow, '#7a4200'); xz.restore();
-  for (let d = depth; d >= 1; d--) { const t = d / depth; shape(xz, d * .25, d, grow, `rgb(${235 - t * 110},${165 - t * 95},${10 - t * 10})`); }
+  for (let d = depth; d >= 1; d--) { const t = d / depth; const c = t < .35 ? [255, 226 - t * 60, 40 - t * 100] : [255 - (t - .35) * 110, 205 - (t - .35) * 150, 0]; shape(xz, 0, d, grow, `rgb(${c[0] | 0},${c[1] | 0},${Math.max(0, c[2]) | 0})`); }
+  shape(xz, 0, depth * .35, grow, 'rgba(255,250,170,.55)');
   shape(xz, 0, 1.5, grow, 'rgba(255,230,60,.95)');
   xz.drawImage(co, 0, 0);
-  const glints = Math.round(W / px * 2.2);
+  const glints = Math.round(W / px * (opt.glints ?? 1.1));
   for (let g = 0; g < glints; g++) {
     let i = 0; for (let tries = 0; tries < 400; tries++) { const cand = (Math.random() * W * H) | 0; if (R[cand] > .5 && h[cand] > .3) { i = cand; break; } }
-    if (!i) continue; const gx = i % W, gy = (i / W) | 0, s = px * (.1 + Math.random() * .16);
+    if (!i) continue; const gx = i % W, gy = (i / W) | 0, s = px * (.07 + Math.random() * .1);
     const grd = xz.createRadialGradient(gx, gy, 0, gx, gy, s * .35); grd.addColorStop(0, 'rgba(255,255,255,1)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
     xz.fillStyle = grd; xz.beginPath(); xz.arc(gx, gy, s * .35, 0, 7); xz.fill();
     xz.fillStyle = '#fff';
@@ -330,10 +330,10 @@ async function drawWords() {
   try { await document.fonts.load(`900 ${px}px Cinzel`); } catch (e) {}
   const f = css / px;
   document.querySelectorAll('.word').forEach(el => {
-    const j = jewelWord(el.dataset.text, 'Cinzel, serif', px, { rim: .055, depth: .1 });
+    const j = jewelWord(el.dataset.text, 'Cinzel, serif', px, { rim: .035, depth: .16, grow: .05 });
     const c = j.canvas; c.style.width = c.width * f + 'px'; c.style.height = c.height * f + 'px';
     // crop into the screen edges like the album cover: lose a slice of the top word's head and the bottom word's feet
-    const ty = el.classList.contains('top') ? -(j.pad + j.asc * .2) * f : (j.pad + j.desc + j.asc * .12) * f;
+    const ty = el.classList.contains('top') ? -(j.pad - j.asc * .22) * f : (j.pad + j.desc + j.asc * .1) * f;
     c.style.setProperty('--ty', ty + 'px');
     el.innerHTML = ''; el.appendChild(c); requestAnimationFrame(() => c.classList.add('on'));
   });
@@ -601,7 +601,7 @@ function composeStrip(shots) {
   // a thin gold rule and the footer
   x.strokeStyle = '#d79a1c'; x.lineWidth = 3;
   x.strokeRect(pad - 8, pad - 8, W + 16, shots.length * (600 + gap) - gap + 16);
-  const title = jewelWord('GET IN DA BOOTH', 'Cinzel, serif', 60, { rim: .06, depth: .08, shard: .06 }).canvas;
+  const title = jewelWord('GET IN DA BOOTH', 'Cinzel, serif', 60, { rim: .045, depth: .14, shard: .045 }).canvas;
   const tw = W + 40, th = title.height * tw / title.width;
   x.drawImage(title, c.width / 2 - tw / 2, c.height - footer + 4, tw, th);
   x.fillStyle = '#1c2b4a'; x.textAlign = 'center';
