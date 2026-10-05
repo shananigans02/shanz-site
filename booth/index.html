@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>GET IN DA BOOTH</title>
+<meta name="description" content="a browser photobooth that reads your face. four shots, a strip, and a wall to clip it on."/>
+<meta name="theme-color" content="#6f86ad"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bodoni+Moda:opsz,wght@6..96,900&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --gold: #f2c230;
+    --gold-deep: #c98a12;
+    --gold-dark: #6b4205;
+    --ice: #e8f0ff;
+    --navy: #1c2b4a;
+    --ui: 'Archivo Black', 'Arial Black', sans-serif;
+    --display: 'Bodoni Moda', 'Didot', 'Times New Roman', serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  html { overflow-x: hidden; }
+  body {
+    font-family: var(--ui); color: var(--navy); overflow-x: hidden;
+    background: #6f86ad; -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+
+  /* ── chrome marble background, after the act ii cover ── */
+  #marble { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; }
+  #marble::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(255,255,255,.18), transparent 55%),
+                radial-gradient(ellipse at 50% 120%, rgba(20,30,60,.45), transparent 60%);
+  }
+
+  /* ── giant diamond letters: a gold extrusion layer under a crystal-faced layer ── */
+  .word { position: fixed; left: 0; right: 0; z-index: 1; text-align: center; pointer-events: none;
+    font-family: var(--display); font-weight: 900; line-height: .9; letter-spacing: -.01em; white-space: nowrap;
+    font-size: clamp(84px, 15vw, 230px); }
+  .word.top { top: -.22em; }
+  .word.bottom { bottom: -.2em; }
+  .word { overflow: hidden; padding-bottom: .12em; }
+  @supports (overflow: clip) { .word { overflow: visible; overflow-x: clip; padding-bottom: 0; } }
+  .word span { display: flex; justify-content: center; }
+  .word .back { color: var(--gold-deep);
+    text-shadow: 1px 1px 0 #f7d35a, 2px 2px 0 #e9b333, 3px 3px 0 #d79a1c, 4px 4px 0 #c08414, 5px 5px 0 #a86f0e,
+                 6px 6px 0 #8f5b0a, 7px 7px 0 #7a4c07, 8px 8px 0 var(--gold-dark), 10px 14px 24px rgba(20,25,50,.45); }
+  .word .front { position: absolute; left: 0; right: 0; top: 0; color: transparent;
+    -webkit-background-clip: text; background-clip: text; background-size: 180px 180px;
+    -webkit-text-stroke: .05em var(--gold); paint-order: stroke fill; }
+
+  /* sparkles */
+  .sparkle { position: fixed; z-index: 2; width: 26px; height: 26px; pointer-events: none;
+    background: radial-gradient(circle, #fff 0 2px, transparent 3px),
+                linear-gradient(90deg, transparent 46%, #fff 50%, transparent 54%),
+                linear-gradient(0deg, transparent 46%, #fff 50%, transparent 54%);
+    filter: drop-shadow(0 0 4px #fff); animation: twinkle var(--d, 2.6s) ease-in-out infinite var(--delay, 0s); }
+  @keyframes twinkle { 0%,100% { opacity: .15; transform: scale(.5) rotate(0deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
+
+  /* ── the wall: strips you've taken, clipped up ── */
+  #wall { position: fixed; inset: 0; z-index: 3; pointer-events: none; }
+  .wstrip { position: absolute; width: clamp(78px, 7.2vw, 112px); pointer-events: auto; touch-action: none;
+    background: #fbfdff; padding: 5px 5px 12px; box-shadow: 0 12px 26px rgba(20,30,60,.4); cursor: grab; transition: box-shadow .2s; }
+  .wstrip:active { cursor: grabbing; box-shadow: 0 20px 40px rgba(20,30,60,.5); }
+  .wstrip img { display: block; width: 100%; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+  .clip { position: absolute; left: 50%; top: -11px; transform: translateX(-50%); width: 30px; height: 20px; border-radius: 3px; z-index: 2;
+    background: linear-gradient(135deg, #fff6c9, #e0a92a 45%, #8a5a0c 70%, #ffe9a0); box-shadow: 0 2px 5px rgba(0,0,0,.45); }
+
+  /* ── booth ── */
+  #booth { position: relative; z-index: 4; min-height: 100dvh; display: grid; place-items: center; padding: 16px; pointer-events: none; }
+  #booth .frame, #booth .controls > * { pointer-events: auto; }
+  .rig { display: flex; align-items: center; gap: 36px; }
+  .frame { position: relative; width: min(42vh, 440px); aspect-ratio: 4 / 5; border-radius: 6px; overflow: hidden; background: #2a1a10;
+    box-shadow: 0 0 0 5px var(--gold-deep), 0 0 0 8px #fff3c4, 0 0 0 9px rgba(107,66,5,.6), 0 30px 70px rgba(20,30,60,.5); }
+  #view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; transition: opacity .35s ease-out; }
+  #flash.on { opacity: .95; transition: none; }
+  .status { position: absolute; left: 12px; top: 10px; right: 12px; display: flex; justify-content: space-between; z-index: 3;
+    font-size: 11px; letter-spacing: .16em; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.6); pointer-events: none; }
+  .status .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #999; margin-right: 6px; vertical-align: 1px; }
+  .status .dot.live { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+
+  /* big chrome words for countdowns and reactions */
+  .shout { position: absolute; inset: 0; display: grid; place-items: center; z-index: 4; pointer-events: none;
+    font-family: var(--display); font-weight: 900; font-size: clamp(64px, 14vh, 150px); color: #fff; line-height: 1;
+    -webkit-text-stroke: 3px var(--gold); paint-order: stroke fill;
+    text-shadow: 3px 3px 0 var(--gold-deep), 6px 6px 0 var(--gold-dark), 0 0 40px rgba(255,240,200,.6);
+    opacity: 0; transform: scale(1.4) rotate(-6deg); }
+  .shout.go { animation: slam .9s cubic-bezier(.2,1.4,.4,1) forwards; }
+  .shout.count { animation: tick .85s ease-out forwards; }
+  @keyframes slam { 0% { opacity: 0; transform: scale(1.6) rotate(-6deg); } 18% { opacity: 1; transform: scale(1) rotate(-4deg); } 75% { opacity: 1; } 100% { opacity: 0; transform: scale(.96) rotate(-4deg); } }
+  @keyframes tick { 0% { opacity: 0; transform: scale(1.5); } 20% { opacity: 1; transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: scale(.9); } }
+
+  /* controls */
+  .controls { display: flex; flex-direction: column; align-items: center; gap: 18px; min-width: 150px; }
+  .label { font-size: 12px; letter-spacing: .18em; color: var(--navy); text-shadow: 0 1px 0 rgba(255,255,255,.6); text-align: center; }
+  .label b { color: #fff; text-shadow: 0 1px 4px rgba(20,30,60,.5); font-weight: 400; }
+  #shutter { width: 82px; height: 82px; border-radius: 50%; display: grid; place-items: center;
+    background: linear-gradient(135deg, #fff6c9, #e0a92a 45%, #8a5a0c 70%, #ffe9a0); box-shadow: 0 10px 24px rgba(20,30,60,.45); transition: transform .15s; }
+  #shutter::after { content: ''; width: 62px; height: 62px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, #c9d6ee 40%, #7c8fb3); box-shadow: inset 0 -3px 8px rgba(20,30,60,.35); }
+  #shutter:hover { transform: scale(1.05); }
+  #shutter:disabled { opacity: .5; cursor: default; transform: none; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .chip { font-size: 10px; letter-spacing: .14em; padding: 7px 10px; border-radius: 30px; color: var(--navy);
+    background: rgba(255,255,255,.55); box-shadow: inset 0 0 0 1px rgba(255,255,255,.8); backdrop-filter: blur(6px); }
+  .chip[aria-pressed="true"] { background: var(--gold); color: #3a2400; box-shadow: inset 0 0 0 1px #fff3c4, 0 4px 10px rgba(107,66,5,.35); }
+  .textbtn { font-size: 12px; letter-spacing: .18em; color: var(--navy); border-bottom: 2px solid var(--gold); padding-bottom: 2px; }
+  .textbtn:disabled { opacity: .35; cursor: default; }
+
+  /* the freshly printed strip */
+  #tray { position: fixed; z-index: 30; left: 50%; bottom: 0; transform: translate(-50%, 110%); transition: transform .9s cubic-bezier(.2,.9,.3,1);
+    display: flex; flex-direction: column; align-items: center; gap: 12px; padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+  #tray.up { transform: translate(-50%, 0); }
+  #tray .fresh { width: 150px; background: #fbfdff; padding: 7px 7px 16px; box-shadow: 0 20px 50px rgba(20,30,60,.5); touch-action: none; cursor: grab; position: relative; }
+  #tray .fresh img { width: 100%; display: block; pointer-events: none; }
+  @media (max-height: 1000px) { #tray .fresh { width: auto; } #tray .fresh img { width: auto; height: min(56vh, 620px); } }
+  .textbtn { white-space: nowrap; }
+  #tray .row { display: flex; gap: 18px; background: rgba(255,255,255,.7); padding: 10px 16px; border-radius: 40px; backdrop-filter: blur(8px); }
+  .hint { font-size: 10px; letter-spacing: .14em; color: var(--navy); opacity: .7; }
+
+  /* lightbox for a strip on the wall */
+  #lightbox { position: fixed; inset: 0; z-index: 40; display: none; place-items: center; background: rgba(20,30,60,.55); backdrop-filter: blur(6px); }
+  #lightbox.open { display: grid; }
+  #lightbox .box { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  #lightbox img { max-height: 72vh; max-width: 80vw; background: #fbfdff; padding: 8px 8px 18px; box-shadow: 0 30px 70px rgba(0,0,0,.4); }
+  #lightbox .row { display: flex; gap: 22px; background: rgba(255,255,255,.75); padding: 10px 18px; border-radius: 40px; }
+
+  /* entry screen */
+  #enter { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; transition: opacity .6s; }
+  body:not(.in) .rig { opacity: 0; pointer-events: none; }
+  .rig { transition: opacity .6s .2s; }
+  #enter.gone { opacity: 0; pointer-events: none; }
+  #enter .card { display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; padding: 24px;
+    background: rgba(255,255,255,.45); border-radius: 18px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.8), 0 20px 50px rgba(20,30,60,.25); }
+  #enter-btn { font-size: 14px; letter-spacing: .2em; padding: 16px 30px; border-radius: 40px; color: #3a2400;
+    background: linear-gradient(135deg, #fff6c9, #f2c230 45%, #c98a12 75%, #ffe9a0); box-shadow: 0 10px 24px rgba(107,66,5,.35); }
+  .small { font-size: 10px; letter-spacing: .14em; color: var(--navy); max-width: 260px; line-height: 1.7; }
+  .err { color: #8a1010; }
+  .err:empty { display: none; }
+
+  /* phones: stack the controls under the camera, wall becomes a band at the bottom */
+  @media (max-width: 760px), (max-aspect-ratio: 3/4) {
+    #booth { align-items: start; padding-top: 22vw; padding-bottom: 46vw; }
+    .rig { flex-direction: column; gap: 18px; }
+    .frame { width: min(86vw, 420px); }
+    .controls { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 16px 22px; min-width: 0; }
+    .controls .label.top { order: -1; width: 100%; }
+    .word { font-size: 21vw; position: absolute; }
+    html, body { height: auto; }
+    body { position: relative; min-height: 100dvh; }
+    /* on phones the wall is a gold clothesline under the booth */
+    #wall.line { position: relative; inset: auto; z-index: 4; pointer-events: auto; width: 100vw; margin: 6px -16px 0;
+      display: flex; gap: 16px; overflow-x: auto; padding: 24px 20px 18px; scrollbar-width: none;
+      background: linear-gradient(#f2c230, #c98a12) 0 13px / 100% 2px no-repeat; }
+    #wall.line:empty { display: none; }
+    #wall.line .wstrip { position: relative; flex: 0 0 60px; width: 60px; padding: 3px 3px 8px; touch-action: auto; }
+    #wall.line .clip { width: 20px; height: 14px; top: -9px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .sparkle { animation: none; opacity: .7; } }
+</style>
+</head>
+<body>
+
+<div id="marble"></div>
+<div class="word top" aria-hidden="true"><span class="back">GET IN</span><span class="front">GET IN</span></div>
+<div class="word bottom" aria-hidden="true"><span class="back">DA BOOTH</span><span class="front">DA BOOTH</span></div>
+<div id="sparkles"></div>
+<div id="wall" aria-label="your wall of strips"></div>
+
+<main id="booth">
+  <div class="rig">
+    <div class="frame">
+      <canvas id="view" aria-label="camera"></canvas>
+      <div id="flash"></div>
+      <div class="status"><span><span class="dot" id="live-dot"></span><span id="live-text">WARMING UP</span></span><span id="mood-text"></span></div>
+      <div class="shout" id="shout"></div>
+    </div>
+    <div class="controls">
+      <div class="label top" id="count-label">FOUR SHOTS</div>
+      <button id="shutter" aria-label="take four photos" disabled></button>
+      <div class="chips" role="group" aria-label="filter">
+        <button class="chip" data-filter="mood" aria-pressed="true">MOOD</button>
+        <button class="chip" data-filter="double" aria-pressed="false">DOUBLE EXPOSURE</button>
+      </div>
+      <button class="chip" id="sound" aria-pressed="true">SOUND ON</button>
+    </div>
+  </div>
+</main>
+
+<div id="tray" aria-live="polite">
+  <div class="fresh" id="fresh"><i class="clip"></i><img id="fresh-img" alt="your photo strip"/></div>
+  <div class="row"><button class="textbtn" id="download">DOWNLOAD</button><button class="textbtn" id="clip-it">CLIP TO WALL</button></div>
+</div>
+
+<div id="lightbox" role="dialog" aria-modal="true">
+  <div class="box"><img id="lb-img" alt="photo strip"/>
+    <div class="row"><button class="textbtn" id="lb-download">DOWNLOAD</button><button class="textbtn" id="lb-remove">TAKE DOWN</button><button class="textbtn" id="lb-close">CLOSE</button></div>
+  </div>
+</div>
+
+<div id="enter">
+  <div class="card">
+    <button id="enter-btn">ENTER THE BOOTH</button>
+    <p class="small">IT READS YOUR FACE AND HANDS TO REACT. EVERYTHING RUNS ON YOUR DEVICE. NOTHING IS UPLOADED.</p>
+    <p class="small err" id="enter-err"></p>
+  </div>
+</div>
+
+<script type="module">
+/* ───────────────────────── look: marble, crystal letters, sparkles ───────────────────────── */
+
+// icy chrome marble, built from noise so it never repeats visibly
+(function marble() {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000'>
+    <filter id='m' x='0' y='0'><feTurbulence type='fractalNoise' baseFrequency='0.0022 0.0055' numOctaves='3' seed='11'/>
+      <feColorMatrix type='saturate' values='0'/>
+      <feComponentTransfer><feFuncR type='table' tableValues='0.20 0.55 0.92 0.48 0.86 0.30 0.97 0.62 0.90'/>
+        <feFuncG type='table' tableValues='0.27 0.63 0.95 0.56 0.90 0.38 0.99 0.69 0.93'/><feFuncB type='table' tableValues='0.42 0.78 1 0.72 0.97 0.56 1 0.83 0.98'/></feComponentTransfer>
+      <feGaussianBlur stdDeviation='1.5'/></filter>
+    <rect width='100%' height='100%' filter='url(#m)'/></svg>`;
+  document.getElementById('marble').style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+})();
+
+// diamond crystal texture for the letter faces
+(function crystal() {
+  const c = document.createElement('canvas'); c.width = c.height = 180;
+  const x = c.getContext('2d');
+  x.fillStyle = '#eef3ff'; x.fillRect(0, 0, 180, 180);
+  const tones = ['#ffffff', '#f4f7ff', '#dfe8f5', '#c4d2ea', '#9fb4d6', '#7c8fb3', '#fdfbff', '#e6ecff'];
+  const step = 15;
+  for (let gy = 0; gy < 180; gy += step) for (let gx = 0; gx < 180; gx += step) {
+    const pts = [[gx, gy], [gx + step, gy], [gx + step, gy + step], [gx, gy + step]].map(([a, b]) => [a + (Math.random() - .5) * 5, b + (Math.random() - .5) * 5]);
+    const cx = gx + step / 2 + (Math.random() - .5) * 4, cy = gy + step / 2 + (Math.random() - .5) * 4;
+    for (let i = 0; i < 4; i++) {
+      const [a, b] = [pts[i], pts[(i + 1) % 4]];
+      x.beginPath(); x.moveTo(cx, cy); x.lineTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.closePath();
+      x.fillStyle = tones[(Math.random() * tones.length) | 0]; x.fill();
+      x.strokeStyle = 'rgba(90,110,150,.35)'; x.lineWidth = .6; x.stroke();
+    }
+  }
+  for (let i = 0; i < 70; i++) { // glints
+    x.fillStyle = `rgba(255,255,255,${.6 + Math.random() * .4})`;
+    x.beginPath(); x.arc(Math.random() * 180, Math.random() * 180, Math.random() * 1.6 + .4, 0, 7); x.fill();
+  }
+  for (let i = 0; i < 10; i++) { // the odd rainbow fire in the stones
+    x.fillStyle = `hsla(${Math.random() * 360},90%,70%,.35)`;
+    x.beginPath(); x.arc(Math.random() * 180, Math.random() * 180, 2 + Math.random() * 3, 0, 7); x.fill();
+  }
+  const url = c.toDataURL();
+  document.querySelectorAll('.word .front').forEach(el => el.style.backgroundImage = `url(${url})`);
+})();
+
+(function sparkles() {
+  const host = document.getElementById('sparkles');
+  const spots = [[12, 14], [86, 10], [70, 88], [8, 84], [93, 56], [5, 46], [42, 93], [57, 7], [30, 6], [96, 92], [24, 90]];
+  spots.forEach(([l, t], i) => {
+    const s = document.createElement('i'); s.className = 'sparkle';
+    s.style.cssText = `left:${l}%;top:${t}%;--d:${2 + Math.random() * 2.5}s;--delay:${-Math.random() * 3}s;transform:scale(${.6 + Math.random() * .7})`;
+    host.appendChild(s);
+  });
+})();
+
+/* ───────────────────────── sound (web audio: works on iphones after one tap) ───────────────────────── */
+
+const SOUND_FILES = { intro: 'latto_get_in_da_booth', ah: 'ah_short', quack: 'quack', fahh: 'fahh', wow: 'wow', heart: 'heart_shalala', bang: 'finger_guns', error: 'windows_error' };
+let actx = null, soundOn = true;
+const buffers = {};
+async function loadSounds() {
+  await Promise.all(Object.entries(SOUND_FILES).map(async ([k, f]) => {
+    try { const r = await fetch(`sounds/${f}.mp3`); buffers[k] = await actx.decodeAudioData(await r.arrayBuffer()); } catch (e) {}
+  }));
+}
+function play(k, vol = 1) {
+  if (!soundOn || !actx || !buffers[k]) return;
+  const src = actx.createBufferSource(), g = actx.createGain();
+  g.gain.value = vol; src.buffer = buffers[k]; src.connect(g).connect(actx.destination); src.start();
+}
+
+/* ───────────────────────── camera + the vintage film grade (webgl) ───────────────────────── */
+
+const video = document.createElement('video');
+video.muted = true; video.playsInline = true; video.setAttribute('playsinline', '');
+const view = document.getElementById('view');
+const gl = view.getContext('webgl', { preserveDrawingBuffer: true, premultipliedAlpha: false });
+
+const VS = `attribute vec2 p; varying vec2 uv; void main(){ uv = p*.5+.5; gl_Position = vec4(p,0.,1.); }`;
+const FS = `precision mediump float;
+varying vec2 uv;
+uniform sampler2D cam, g1, g2;
+uniform vec2 crop, off;          // cover-fit the camera into the 4:5 frame
+uniform vec3 tint; uniform float tintAmt, mode, time, flash;
+float lum(vec3 c){ return dot(c, vec3(.299,.587,.114)); }
+float rnd(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)) + time) * 43758.5453); }
+vec2 camUV(vec2 u){ return vec2(1. - u.x, 1. - u.y) * crop + off; } // mirrored, flipped for gl
+void main(){
+  vec2 q = camUV(uv);
+  vec3 c;
+  if (mode < .5) {
+    c = texture2D(cam, q).rgb;
+    c = (c - .5) * 1.22 + .5;                                  // contrast
+    float l = lum(c);
+    vec3 sepia = vec3(l) * vec3(1.10, .90, .70);
+    c = mix(c, sepia, .30);                                    // warm, aged
+    c *= vec3(1.06, 1.0, .88);
+    c = mix(c, floor(c * 6. + .5) / 6., .45);                  // a little posterized, like print
+    vec3 washed = tint * (l * 1.35 + .12);
+    c = mix(c, washed, tintAmt);                               // mood color stays readable
+  } else {
+    // double exposure: high-contrast black and white, with ghosts of the last second of movement
+    float a = smoothstep(.22, .82, lum(texture2D(cam, q).rgb));
+    float b = smoothstep(.22, .82, lum(texture2D(g1, q + vec2(.035, 0.)).rgb)) * .62;
+    float d = smoothstep(.22, .82, lum(texture2D(g2, q - vec2(.05, 0.)).rgb)) * .45;
+    float m = 1. - (1. - a) * (1. - b) * (1. - d);             // screen blend
+    c = vec3(m) * vec3(1.02, 1., .97);
+  }
+  c += (rnd(uv * 900.) - .5) * .085;                          // film grain
+  float v = smoothstep(1.05, .32, length(uv - .5) * 1.25);    // vignette
+  c *= mix(.62, 1., v);
+  c = mix(c, vec3(1.), flash);
+  gl_FragColor = vec4(c, 1.);
+}`;
+function sh(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; }
+const prog = gl.createProgram();
+gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog);
+const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+const ploc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(ploc); gl.vertexAttribPointer(ploc, 2, gl.FLOAT, false, 0, 0);
+const U = n => gl.getUniformLocation(prog, n);
+function makeTex(unit) {
+  const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+  [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T].forEach(p => gl.texParameteri(gl.TEXTURE_2D, p, gl.CLAMP_TO_EDGE));
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([40, 30, 20]));
+  return t;
+}
+const texCam = makeTex(0), texG = [makeTex(1), makeTex(2)];
+gl.uniform1i(U('cam'), 0); gl.uniform1i(U('g1'), 1); gl.uniform1i(U('g2'), 2);
+
+let filterMode = 'mood';
+const tintNow = [0, 0, 0], tintGoal = [0, 0, 0];
+let tintAmt = 0, tintAmtGoal = 0, flashAmt = 0, lastGhost = 0, ghostFlip = 0;
+
+function sizeCanvas() {
+  const r = view.getBoundingClientRect(), d = Math.min(window.devicePixelRatio || 1, 2);
+  view.width = Math.round(r.width * d); view.height = Math.round(r.height * d);
+}
+function upload(tex, unit) { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video); }
+
+function render(now) {
+  if (video.readyState >= 2) {
+    upload(texCam, 0);
+    // keep two older frames for the double exposure ghosts
+    if (filterMode === 'double' && now - lastGhost > 170) {
+      lastGhost = now; ghostFlip ^= 1;
+      // swap roles so g1 is always the newer ghost
+      const older = texG[1]; texG[1] = texG[0]; texG[0] = older;
+      upload(texG[0], 1); gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, texG[1]);
+    }
+    // cover-fit: crop the camera to the frame's aspect
+    const fa = view.width / view.height, va = video.videoWidth / video.videoHeight;
+    let sx = 1, sy = 1; if (va > fa) sx = fa / va; else sy = va / fa;
+    gl.uniform2f(U('crop'), sx, sy); gl.uniform2f(U('off'), (1 - sx) / 2, (1 - sy) / 2);
+  }
+  for (let i = 0; i < 3; i++) tintNow[i] += (tintGoal[i] - tintNow[i]) * .08;
+  tintAmt += (tintAmtGoal - tintAmt) * .08;
+  flashAmt *= .86;
+  gl.viewport(0, 0, view.width, view.height);
+  gl.uniform3f(U('tint'), tintNow[0], tintNow[1], tintNow[2]);
+  gl.uniform1f(U('tintAmt'), tintAmt);
+  gl.uniform1f(U('mode'), filterMode === 'double' ? 1 : 0);
+  gl.uniform1f(U('time'), (now % 10000) / 1000);
+  gl.uniform1f(U('flash'), flashAmt);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
+/* ───────────────────────── reading the face and hands ───────────────────────── */
+
+const MOODS = {
+  happy:     { rgb: [1.0, .78, .18], amt: .42, label: 'HAPPY' },
+  angry:     { rgb: [.95, .12, .10], amt: .48, label: 'ANGRY' },
+  sad:       { rgb: [.28, .42, 1.0], amt: .45, label: 'SAD' },
+  surprised: { rgb: [1.0, .97, .90], amt: .25, label: 'SURPRISED' },
+  neutral:   { rgb: [0, 0, 0],       amt: 0,   label: 'NEUTRAL' }
+};
+let mood = 'neutral', moodSince = 0;
+const smooth = {};
+const ema = (k, v, a = .35) => (smooth[k] = smooth[k] == null ? v : smooth[k] + (v - smooth[k]) * a);
+const cooldown = {};
+function ready(k, ms = 2200) { const t = performance.now(); if (cooldown[k] && t - cooldown[k] < ms) return false; cooldown[k] = t; return true; }
+
+const shoutEl = document.getElementById('shout');
+let shoutLock = 0;
+function shout(text, cls = 'go') {
+  if (cls === 'go' && performance.now() < shoutLock) return;
+  shoutEl.textContent = text; shoutEl.className = 'shout'; void shoutEl.offsetWidth; shoutEl.className = 'shout ' + cls;
+}
+
+function setMood(m) {
+  if (m === mood) return;
+  mood = m; moodSince = performance.now();
+  const cfg = MOODS[m];
+  tintGoal[0] = cfg.rgb[0]; tintGoal[1] = cfg.rgb[1]; tintGoal[2] = cfg.rgb[2]; tintAmtGoal = filterMode === 'mood' ? cfg.amt : 0;
+  document.getElementById('mood-text').textContent = 'MOOD · ' + cfg.label;
+  if (m === 'surprised' && ready('surprised')) { flashAmt = .55; shout('WOW!'); play('wow'); }
+  if (m === 'angry' && ready('angry', 3000)) { shout('FAHH'); play('fahh'); }
+}
+
+// blendshape scores → mood + reactions
+function readFace(bs) {
+  const s = n => bs[n] || 0;
+  const smile = ema('smile', (s('mouthSmileLeft') + s('mouthSmileRight')) / 2);
+  const jaw = ema('jaw', s('jawOpen'));
+  const pucker = ema('pucker', s('mouthPucker'));
+  const browUp = ema('browUp', s('browInnerUp'));
+  const browDown = ema('browDown', (s('browDownLeft') + s('browDownRight')) / 2);
+  const eyeWide = ema('eyeWide', (s('eyeWideLeft') + s('eyeWideRight')) / 2);
+  const frown = ema('frown', (s('mouthFrownLeft') + s('mouthFrownRight')) / 2);
+  const sneer = ema('sneer', (s('noseSneerLeft') + s('noseSneerRight')) / 2);
+
+  let m = 'neutral';
+  if (smile > .45) m = 'happy';
+  else if (jaw > .3 && (eyeWide > .22 || browUp > .45)) m = 'surprised';
+  else if ((browDown > .38 || sneer > .3) && smile < .2) m = 'angry';
+  else if (frown > .22 && browUp > .2 && smile < .15) m = 'sad';
+  setMood(m);
+
+  if (jaw > .62 && m !== 'surprised' && ready('ah', 1800)) { shout('AH!'); play('ah'); }
+  if (pucker > .72 && ready('quack', 2000)) { shout('QUACK'); play('quack'); }
+}
+
+const GESTURES = {
+  Victory:      () => { shout('PEACE'); play('heart'); },
+  ILoveYou:     () => { shout('♡'); play('heart'); },
+  Thumb_Up:     () => { shout('YES'); play('wow', .8); },
+  Pointing_Up:  () => { shout('BANG'); play('bang'); },
+  Thumb_Down:   () => { shout('ERROR'); play('error'); }
+};
+function readHands(res) {
+  const g = res && res.gestures && res.gestures[0] && res.gestures[0][0];
+  if (!g || g.score < .65 || !GESTURES[g.categoryName]) return;
+  if (ready('g:' + g.categoryName, 2500)) GESTURES[g.categoryName]();
+}
+
+let face = null, hands = null, frameNo = 0, lastTs = 0;
+async function loadModels() {
+  const V = '0.10.14';
+  const { FilesetResolver, FaceLandmarker, GestureRecognizer } = await import(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${V}/vision_bundle.mjs`);
+  const files = await FilesetResolver.forVisionTasks(`https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${V}/wasm`);
+  const make = async (Kind, opts) => {
+    try { return await Kind.createFromOptions(files, { ...opts, baseOptions: { ...opts.baseOptions, delegate: 'GPU' } }); }
+    catch (e) { return await Kind.createFromOptions(files, { ...opts, baseOptions: { ...opts.baseOptions, delegate: 'CPU' } }); }
+  };
+  [face, hands] = await Promise.all([
+    make(FaceLandmarker, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task' },
+      runningMode: 'VIDEO', numFaces: 1, outputFaceBlendshapes: true }),
+    make(GestureRecognizer, { baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task' },
+      runningMode: 'VIDEO', numHands: 1 })
+  ]);
+}
+function detect(now) {
+  if (!face || video.readyState < 2) return;
+  const ts = Math.max(now, lastTs + 1); lastTs = ts; frameNo++;
+  try {
+    const r = face.detectForVideo(video, ts);
+    const cats = r.faceBlendshapes && r.faceBlendshapes[0] && r.faceBlendshapes[0].categories;
+    if (cats) { const bs = {}; cats.forEach(c => bs[c.categoryName] = c.score); readFace(bs); }
+    else document.getElementById('mood-text').textContent = 'NO FACE';
+    if (hands && frameNo % 3 === 0) readHands(hands.recognizeForVideo(video, ts + .5));
+  } catch (e) {}
+}
+
+/* ───────────────────────── the loop ───────────────────────── */
+
+function loop(now) { detect(now); render(now); requestAnimationFrame(loop); }
+
+/* ───────────────────────── four shots → a strip ───────────────────────── */
+
+const shutter = document.getElementById('shutter'), countLabel = document.getElementById('count-label');
+const wait = ms => new Promise(r => setTimeout(r, ms));
+let busy = false, lastStrip = null;
+
+async function takeFour() {
+  if (busy) return; busy = true; shutter.disabled = true; hideTray();
+  const shots = [];
+  for (let i = 1; i <= 4; i++) {
+    countLabel.innerHTML = `PHOTO <b>${i}</b> OF 4`;
+    for (const n of ['3', '2', '1']) { shoutLock = performance.now() + 900; shout(n, 'count'); await wait(800); }
+    // capture exactly what the booth shows, with the mood tint at that moment
+    render(performance.now());
+    const shot = document.createElement('canvas'); shot.width = 480; shot.height = 600;
+    shot.getContext('2d').drawImage(view, 0, 0, 480, 600);
+    shots.push({ img: shot, mood: MOODS[mood].label });
+    const fl = document.getElementById('flash'); fl.classList.add('on'); requestAnimationFrame(() => requestAnimationFrame(() => fl.classList.remove('on')));
+    play('ah', .0001); // keeps some phones' audio awake between shots
+    await wait(700);
+  }
+  lastStrip = composeStrip(shots);
+  countLabel.textContent = 'FOUR SHOTS';
+  showTray(lastStrip);
+  busy = false; shutter.disabled = false;
+}
+
+function composeStrip(shots) {
+  const W = 480, pad = 28, gap = 18, footer = 120;
+  const c = document.createElement('canvas');
+  c.width = W + pad * 2; c.height = pad + shots.length * (600 + gap) - gap + footer;
+  const x = c.getContext('2d');
+  x.fillStyle = '#fbfdff'; x.fillRect(0, 0, c.width, c.height);
+  shots.forEach((s, i) => x.drawImage(s.img, pad, pad + i * (600 + gap)));
+  // a thin gold rule and the footer
+  x.strokeStyle = '#d79a1c'; x.lineWidth = 3;
+  x.strokeRect(pad - 8, pad - 8, W + 16, shots.length * (600 + gap) - gap + 16);
+  x.fillStyle = '#1c2b4a'; x.textAlign = 'center';
+  x.font = '900 46px "Bodoni Moda", serif';
+  x.fillText('GET IN DA BOOTH', c.width / 2, c.height - 62);
+  x.font = '18px "Archivo Black", sans-serif';
+  const d = new Date();
+  x.fillText(`${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}  ·  ${shots.map(s => s.mood).join(' / ')}`, c.width / 2, c.height - 28);
+  return c;
+}
+
+/* tray: the strip slides out */
+const tray = document.getElementById('tray'), freshImg = document.getElementById('fresh-img');
+function showTray(strip) { freshImg.src = strip.toDataURL('image/jpeg', .9); tray.classList.add('up'); }
+function hideTray() { tray.classList.remove('up'); }
+
+function downloadCanvasOrUrl(src) {
+  const a = document.createElement('a');
+  a.href = typeof src === 'string' ? src : src.toDataURL('image/png');
+  a.download = `get-in-da-booth-${Date.now()}.png`; document.body.appendChild(a); a.click(); a.remove();
+}
+document.getElementById('download').addEventListener('click', () => lastStrip && downloadCanvasOrUrl(lastStrip));
+
+/* ───────────────────────── the wall (saved in this browser only) ───────────────────────── */
+
+const wall = document.getElementById('wall');
+const KEY = 'booth-wall-v1', MAX = 24;
+let pieces = [];
+try { pieces = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { pieces = []; }
+function save() {
+  while (pieces.length > MAX) pieces.shift();
+  try { localStorage.setItem(KEY, JSON.stringify(pieces)); }
+  catch (e) { pieces.shift(); try { localStorage.setItem(KEY, JSON.stringify(pieces)); } catch (e2) {} }
+}
+function thumb(strip) { // smaller copy for the wall, so a couple dozen strips fit in storage
+  const w = 220, h = Math.round(strip.height * w / strip.width);
+  const c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(strip, 0, 0, w, h);
+  return c.toDataURL('image/jpeg', .8);
+}
+// a free spot on the wall, away from the booth in the middle
+function freeSpot() {
+  const narrow = innerWidth < 760 || innerWidth / innerHeight < .75;
+  for (let tries = 0; tries < 30; tries++) {
+    const x = narrow ? 4 + Math.random() * 78 : (Math.random() < .5 ? 3 + Math.random() * 22 : 74 + Math.random() * 20);
+    const y = narrow ? 74 + Math.random() * 10 : 14 + Math.random() * 52;
+    if (!pieces.some(p => Math.abs(p.x - x) < 6 && Math.abs(p.y - y) < 10)) return { x, y };
+  }
+  return { x: 5 + Math.random() * 85, y: 15 + Math.random() * 60 };
+}
+function pinToWall(src, pos) {
+  const p = { id: Date.now() + Math.random(), src, rot: +(Math.random() * 12 - 6).toFixed(1), ...(pos || freeSpot()) };
+  pieces.push(p); save(); drawPiece(p);
+}
+function drawPiece(p) {
+  const el = document.createElement('div'); el.className = 'wstrip';
+  el.style.left = p.x + '%'; el.style.top = p.y + '%'; el.style.transform = `rotate(${p.rot}deg)`;
+  el.innerHTML = '<i class="clip"></i><img alt="photo strip"/>'; el.querySelector('img').src = p.src;
+  draggable(el, (x, y) => { p.x = x; p.y = y; save(); }, () => openLightbox(p));
+  el.addEventListener('click', () => { if (wall.classList.contains('line')) openLightbox(p); });
+  if (wall.classList.contains('line')) wall.prepend(el); else wall.appendChild(el);
+}
+// phones get a clothesline under the booth instead of a wall around it
+const narrowMQ = matchMedia('(max-width: 760px), (max-aspect-ratio: 3/4)');
+function layoutWall() {
+  const n = narrowMQ.matches;
+  wall.classList.toggle('line', n);
+  (n ? document.getElementById('booth') : document.body).insertBefore(wall, n ? null : document.getElementById('booth'));
+  wall.innerHTML = ''; pieces.forEach(drawPiece);
+}
+narrowMQ.addEventListener('change', layoutWall);
+layoutWall();
+
+// drag with mouse or finger; a tap without moving opens the strip
+function draggable(el, onDrop, onTap) {
+  el.addEventListener('pointerdown', e => {
+    if (wall.classList.contains('line')) return; // phones: the line scrolls, a tap opens it
+    e.preventDefault(); el.setPointerCapture(e.pointerId);
+    const r = el.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+    let moved = false; const sx = e.clientX, sy = e.clientY;
+    const move = ev => {
+      if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6) moved = true;
+      if (!moved) return;
+      el.style.left = ((ev.clientX - dx) / innerWidth * 100) + '%'; el.style.top = ((ev.clientY - dy) / innerHeight * 100) + '%';
+    };
+    const up = () => {
+      el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up);
+      if (moved) onDrop(parseFloat(el.style.left), parseFloat(el.style.top)); else onTap && onTap();
+    };
+    el.addEventListener('pointermove', move); el.addEventListener('pointerup', up);
+  });
+}
+
+// the fresh strip: button or drag it up onto the wall
+document.getElementById('clip-it').addEventListener('click', () => { if (lastStrip) { pinToWall(thumb(lastStrip)); hideTray(); } });
+(function dragFresh() {
+  const fresh = document.getElementById('fresh');
+  fresh.addEventListener('pointerdown', e => {
+    if (!lastStrip) return; e.preventDefault(); fresh.setPointerCapture(e.pointerId);
+    const sx = e.clientX, sy = e.clientY;
+    const move = ev => { fresh.style.transform = `translate(${ev.clientX - sx}px, ${ev.clientY - sy}px) rotate(-3deg)`; };
+    const up = ev => {
+      fresh.removeEventListener('pointermove', move); fresh.removeEventListener('pointerup', up);
+      fresh.style.transform = '';
+      if (Math.hypot(ev.clientX - sx, ev.clientY - sy) > 60) {
+        const r = fresh.getBoundingClientRect();
+        pinToWall(thumb(lastStrip), { x: Math.max(0, Math.min(92, (ev.clientX - r.width / 2) / innerWidth * 100)), y: Math.max(0, Math.min(80, (ev.clientY - 30) / innerHeight * 100)) });
+        hideTray();
+      }
+    };
+    fresh.addEventListener('pointermove', move); fresh.addEventListener('pointerup', up);
+  });
+})();
+
+// lightbox for strips already on the wall
+const lb = document.getElementById('lightbox'); let lbPiece = null;
+function openLightbox(p) { lbPiece = p; document.getElementById('lb-img').src = p.src; lb.classList.add('open'); }
+document.getElementById('lb-close').addEventListener('click', () => lb.classList.remove('open'));
+lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
+document.getElementById('lb-download').addEventListener('click', () => lbPiece && downloadCanvasOrUrl(lbPiece.src));
+document.getElementById('lb-remove').addEventListener('click', () => {
+  if (!lbPiece) return;
+  pieces = pieces.filter(p => p.id !== lbPiece.id); save();
+  layoutWall(); lb.classList.remove('open');
+});
+
+/* ───────────────────────── controls ───────────────────────── */
+
+shutter.addEventListener('click', takeFour);
+document.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => {
+  filterMode = b.dataset.filter;
+  document.querySelectorAll('[data-filter]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  tintAmtGoal = filterMode === 'mood' ? MOODS[mood].amt : 0;
+}));
+const soundBtn = document.getElementById('sound');
+soundBtn.addEventListener('click', () => { soundOn = !soundOn; soundBtn.textContent = soundOn ? 'SOUND ON' : 'SOUND OFF'; soundBtn.setAttribute('aria-pressed', String(soundOn)); });
+addEventListener('resize', sizeCanvas);
+addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('open'); });
+
+/* ───────────────────────── entering ───────────────────────── */
+
+document.getElementById('enter-btn').addEventListener('click', async () => {
+  const err = document.getElementById('enter-err');
+  actx = new (window.AudioContext || window.webkitAudioContext)(); await actx.resume();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
+    video.srcObject = stream; await video.play();
+  } catch (e) { err.textContent = 'THE BOOTH NEEDS YOUR CAMERA. ALLOW ACCESS AND TRY AGAIN.'; return; }
+  document.getElementById('enter').classList.add('gone'); document.body.classList.add('in');
+  sizeCanvas(); requestAnimationFrame(loop);
+  shutter.disabled = false;
+  loadSounds().then(() => play('intro', .9));
+  const sim = new URLSearchParams(location.search).get('sim');
+  if (sim !== null) return startSim();
+  try {
+    await loadModels();
+    document.getElementById('live-dot').classList.add('live'); document.getElementById('live-text').textContent = 'READING YOU';
+  } catch (e) {
+    document.getElementById('live-text').textContent = 'CAMERA ONLY';
+  }
+});
+
+// ?sim: cycles through moods so the booth can be checked without the face models
+function startSim() {
+  document.getElementById('live-dot').classList.add('live'); document.getElementById('live-text').textContent = 'READING YOU';
+  const seq = ['happy', 'happy', 'neutral', 'surprised', 'angry', 'sad', 'neutral'];
+  let i = 0; setMood('happy');
+  setInterval(() => { setMood(seq[i++ % seq.length]); }, 1600);
+}
+</script>
+</body>
+</html>
